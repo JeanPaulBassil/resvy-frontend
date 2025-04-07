@@ -1,0 +1,13 @@
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+/**
+ * Combines multiple class names and tailwind classes efficiently
+ */
+export function classNames(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
+export function generateId(): string {
+  return Math.random().toString(36).substring(2, 10);
+}
