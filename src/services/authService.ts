@@ -39,10 +39,48 @@ async function sendTokenToBackend(token: string, user: User) {
     console.log('Auth response status:', response.status, 'statusText:', response.statusText);
     
     if (!response.ok) {
+      // Try to parse the response to see if we have a specific error code
+      let errorData;
+      try {
+        errorData = await response.json();
+        console.log('Auth error response data:', errorData);
+      } catch (parseError) {
+        console.error('Error parsing error response:', parseError);
+      }
+      
+      // Check if this is a pending approval error
+      if (errorData?.code === 'AUTH_USER_PENDING_APPROVAL') {
+        console.log('User is pending approval');
+        
+        if (errorData && errorData.user) {
+          // Store the user data with pendingApproval flag
+          const userData = {
+            ...errorData.user,
+            isAllowed: false,
+            pendingApproval: true
+          };
+          
+          // Store in localStorage so we can use it on the unauthorized page
+          localStorage.setItem('pendingUser', JSON.stringify(userData));
+          console.log('Stored pending user data:', userData);
+        }
+        
+        // Set a flag in sessionStorage to help prevent redirect loops
+        sessionStorage.setItem('onUnauthorizedPage', 'true');
+        
+        // Redirect to the unauthorized page
+        if (typeof window !== 'undefined') {
+          window.location.replace('/unauthorized');
+        }
+        
+        // Throw a specific error that will be caught by the calling function
+        throw new Error('UNAUTHORIZED_EMAIL');
+      }
+      
       // Since we're seeing 401 errors for unauthorized emails but can't access the message,
-      // we'll assume any 401 is an unauthorized email case
-      if (response.status === 401) {
-        console.log('401 Unauthorized detected, checking if admin...');
+      // we'll assume any 401 or 403 without a specific code is an unauthorized email case
+      if (response.status === 401 || response.status === 403) {
+        console.log('401/403 Unauthorized detected, checking if admin...');
         console.log('User email:', user.email);
         
         // Try to check if this user is an admin (which would bypass the email allowlist)
@@ -67,11 +105,18 @@ async function sendTokenToBackend(token: string, user: User) {
             const adminData = await adminCheckResponse.json();
             console.log('User is admin, bypassing email allowlist check. Response data:', adminData);
             
-            // Store user data including role in localStorage immediately
-            localStorage.setItem('loggedIn', 'true');
-            localStorage.setItem('userData', JSON.stringify(adminData));
-            
-            return adminData;
+            // Make sure we have the correct admin data
+            if (adminData && (adminData.user?.role === 'ADMIN' || adminData.isAdmin)) {
+              console.log('Confirmed admin status from response data');
+              
+              // Store user data including role in localStorage immediately
+              localStorage.setItem('loggedIn', 'true');
+              localStorage.setItem('userData', JSON.stringify(adminData));
+              
+              return adminData;
+            } else {
+              console.warn('Admin check endpoint returned success but user data does not confirm admin status');
+            }
           } else {
             const errorText = await adminCheckResponse.text();
             console.log('Admin check failed:', errorText);

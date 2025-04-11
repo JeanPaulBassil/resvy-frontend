@@ -150,6 +150,21 @@ axiosInstance.interceptors.response.use(
       
       return Promise.reject(error);
     }
+
+    // Handle users who are pending approval (not on allowed list)
+    if (error.response?.data?.code === 'AUTH_USER_PENDING_APPROVAL') {
+      console.log('User account is pending approval');
+      
+      // Don't log out or show alert - we want them to remain on the unauthorized page
+      // Instead, if we're not already on the unauthorized page, redirect there
+      if (typeof window !== 'undefined' && window.location.pathname !== '/unauthorized') {
+        console.log('Redirecting to unauthorized page for pending approval');
+        sessionStorage.setItem('onUnauthorizedPage', 'true');
+        window.location.replace('/unauthorized');
+      }
+      
+      return Promise.reject(error);
+    }
     
     // Handle token expiration
     if (error.response?.status === 401) {
