@@ -4,8 +4,9 @@ import { Button } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { auth } from '@/lib/firebase';
 
-import { logout } from '@/services/authService';
+import { logout, fetchUserData } from '@/services/authService';
 
 // Preload the icons to prevent flickering
 const ICONS = {
@@ -16,34 +17,68 @@ const ICONS = {
 
 export default function UnauthorizedPage() {
   const [isReady, setIsReady] = useState(false);
-  const [pendingUser, setPendingUser] = useState(null);
+  const [pendingUser, setPendingUser] = useState<any>(null);
   const router = useRouter();
 
-  // Clear any auth data on this page
+  // Check authorization status and redirect if authorized
   useEffect(() => {
-    // Add a flag to indicate we're on the unauthorized page
-    // This can help prevent redirect loops
+    const checkAuthStatus = async () => {
+      try {
+        // Check if Firebase user exists
+        const firebaseUser = auth.currentUser;
+        
+        if (firebaseUser) {
+          // Try to fetch fresh user data from the backend
+          const result = await fetchUserData(firebaseUser);
+          
+          // If we successfully get data back, user is authorized
+          if (result && !result.pendingApproval) {
+            console.log('User is actually authorized, redirecting to dashboard');
+            // Remove unauthorized flags
+            sessionStorage.removeItem('onUnauthorizedPage');
+            
+            // Redirect to appropriate page based on role
+            if (result.user?.role === 'ADMIN' || result.role === 'ADMIN') {
+              router.replace('/admin/clients');
+            } else {
+              router.replace('/dashboard');
+            }
+            return;
+          }
+        }
+        
+        // Otherwise continue with unauthorized page setup
+        const pendingUserData = localStorage.getItem('pendingUser');
+        if (pendingUserData) {
+          try {
+            setPendingUser(JSON.parse(pendingUserData));
+          } catch (error) {
+            console.error('Error parsing pending user data:', error);
+          }
+        }
+        
+        // Mark component as ready
+        setIsReady(true);
+      } catch (error) {
+        console.error('Error checking auth status:', error);
+        // Still mark as ready even if there's an error
+        setIsReady(true);
+      }
+    };
+    
+    // Set the unauthorized page flag
     sessionStorage.setItem('onUnauthorizedPage', 'true');
     
-    // Check if we have a pending user
-    const pendingUserData = localStorage.getItem('pendingUser');
-    if (pendingUserData) {
-      try {
-        setPendingUser(JSON.parse(pendingUserData));
-      } catch (error) {
-        console.error('Error parsing pending user data:', error);
-      }
-    }
+    // Run the auth check
+    checkAuthStatus();
     
-    // Preload icons and mark component as ready
+    // Preload icons
     const preloadIcons = async () => {
       try {
         // Small delay to ensure everything is loaded
         await new Promise(resolve => setTimeout(resolve, 100));
-        setIsReady(true);
       } catch (error) {
         console.error('Error preloading icons:', error);
-        setIsReady(true); // Still mark as ready even if there's an error
       }
     };
     
@@ -53,7 +88,7 @@ export default function UnauthorizedPage() {
       // Clean up when leaving the page
       sessionStorage.removeItem('onUnauthorizedPage');
     };
-  }, []);
+  }, [router]);
 
   // Handle returning to login
   const handleReturnToLogin = async () => {
@@ -86,8 +121,40 @@ export default function UnauthorizedPage() {
   };
 
   // Handle refreshing the page to check if user has been approved
-  const handleRefresh = () => {
-    window.location.reload();
+  const handleRefresh = async () => {
+    setIsReady(false); // Show loading state
+    
+    try {
+      // Check if user is logged in with Firebase
+      const firebaseUser = auth.currentUser;
+      
+      if (firebaseUser) {
+        // Try to fetch fresh user data from the backend
+        const result = await fetchUserData(firebaseUser);
+        
+        // If we successfully get data back, user is authorized
+        if (result && !result.pendingApproval) {
+          console.log('User is now authorized, redirecting to dashboard');
+          
+          // Remove unauthorized flags
+          sessionStorage.removeItem('onUnauthorizedPage');
+          
+          // Redirect to appropriate page based on role
+          if (result.user?.role === 'ADMIN' || result.role === 'ADMIN') {
+            router.replace('/admin/clients');
+          } else {
+            router.replace('/dashboard');
+          }
+          return;
+        }
+      }
+      
+      // If still not authorized, just refresh the page
+      window.location.reload();
+    } catch (error) {
+      console.error('Error refreshing auth status:', error);
+      window.location.reload();
+    }
   };
 
   // Show a simple loading state until everything is ready

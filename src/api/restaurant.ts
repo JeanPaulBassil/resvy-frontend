@@ -76,6 +76,18 @@ export const restaurantApi = {
   // Get restaurants owned by the current user
   getMyRestaurants: async (): Promise<Restaurant[]> => {
     try {
+      // First check if the user is logged in to prevent unnecessary requests
+      const isLoggedIn = localStorage.getItem('loggedIn') === 'true';
+      const isAuthPage = typeof window !== 'undefined' && 
+        (window.location.pathname.includes('/login') || 
+         window.location.pathname.includes('/signup'));
+      
+      // Don't make the request if we're not logged in or we're on an auth page
+      if (!isLoggedIn || isAuthPage) {
+        console.log('User not logged in or on auth page, skipping my-restaurants request');
+        return [];
+      }
+      
       console.log('Making API request to /restaurants/my-restaurants');
       const response = await axiosInstance.get<Restaurant[]>('/restaurants/my-restaurants');
       console.log('API response received successfully');

@@ -170,8 +170,10 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status === 401) {
       console.log('Authentication error:', error.response?.data);
       
-      // If we're not already on the login page, redirect there
-      if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+      // If we're not already on the login or signup page, redirect there
+      if (typeof window !== 'undefined' && 
+          !window.location.pathname.includes('/login') && 
+          !window.location.pathname.includes('/signup')) {
         // Store the current path to redirect back after login
         sessionStorage.setItem('redirectPath', window.location.pathname);
         

@@ -1,6 +1,7 @@
 import { Restaurant } from '@/api/restaurant';
 import { useRestaurantData } from '@/hooks/useRestaurantData';
 import React, { createContext, ReactNode, useContext, useEffect, useState, useMemo } from 'react';
+import { usePathname } from 'next/navigation';
 
 interface RestaurantContextType {
   restaurants: Restaurant[];
@@ -22,14 +23,23 @@ export const useRestaurant = () => {
 };
 
 export const RestaurantProvider = ({ children }: { children: ReactNode }) => {
+  const pathname = usePathname();
+  const isAuthPage = pathname === '/login' || pathname === '/signup';
+  const isLoggedIn = typeof window !== 'undefined' && localStorage.getItem('loggedIn') === 'true';
+  
+  // Only fetch restaurant data if we're on a non-auth page and logged in
+  const shouldFetchData = !isAuthPage && isLoggedIn;
+  
   const { data, isLoading, error, refetch } = useRestaurantData();
   const [currentRestaurant, setCurrentRestaurant] = useState<Restaurant | null>(null);
 
   // Get the restaurants array from the data
   const restaurants = useMemo(() => data?.restaurants || [], [data?.restaurants]);
 
-  // Set current restaurant when restaurants data changes
+  // Only update current restaurant if we should fetch data
   useEffect(() => {
+    if (!shouldFetchData) return;
+    
     if (restaurants.length > 0 && !currentRestaurant) {
       // Check if we have a saved restaurant ID in localStorage
       const savedRestaurantId = localStorage.getItem('currentRestaurantId');
@@ -47,7 +57,7 @@ export const RestaurantProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem('currentRestaurantId', restaurants[0].id);
       }
     }
-  }, [restaurants, currentRestaurant]);
+  }, [restaurants, currentRestaurant, shouldFetchData]);
 
   // Update localStorage when current restaurant changes
   const handleSetCurrentRestaurant = (restaurant: Restaurant) => {
