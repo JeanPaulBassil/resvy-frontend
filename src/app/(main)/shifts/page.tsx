@@ -117,7 +117,7 @@ export default function ShiftsPage() {
     startTime: '09:00',
     endTime: '17:00',
     days: [],
-    color: '#75CAA6'
+    color: '#3B82F6'
   });
   const [errors, setErrors] = useState<FormErrors>({});
 
@@ -185,7 +185,7 @@ export default function ShiftsPage() {
           startTime: '09:00',
           endTime: '17:00',
           days: [],
-          color: '#75CAA6'
+          color: '#3B82F6'
         });
         setSelectedShift(null);
         onClose();
@@ -245,7 +245,7 @@ export default function ShiftsPage() {
   };
 
   const colorOptions = [
-    { value: '#75CAA6', label: 'Teal (Default)' },
+    { value: '#3B82F6', label: 'Teal (Default)' },
     { value: '#FFB347', label: 'Orange' },
     { value: '#77DD77', label: 'Green' },
     { value: '#836FFF', label: 'Purple' },
@@ -263,10 +263,10 @@ export default function ShiftsPage() {
           <div className="flex items-center justify-center h-64">
             <div className="flex flex-col items-center">
               <div className="relative w-12 h-12 mb-3">
-                <div className="absolute inset-0 rounded-full border-2 border-[#75CAA6]/20"></div>
-                <div className="absolute inset-0 rounded-full border-t-2 border-[#75CAA6] animate-spin"></div>
-                <div className="absolute inset-2 rounded-full bg-[#75CAA6]/10 animate-pulse"></div>
-                <div className="absolute inset-4 rounded-full bg-[#75CAA6]/20 animate-pulse" style={{ animationDelay: "0.3s" }}></div>
+                <div className="absolute inset-0 rounded-full border-2 border-[#3B82F6]/20"></div>
+                <div className="absolute inset-0 rounded-full border-t-2 border-[#3B82F6] animate-spin"></div>
+                <div className="absolute inset-2 rounded-full bg-[#3B82F6]/10 animate-pulse"></div>
+                <div className="absolute inset-4 rounded-full bg-[#3B82F6]/20 animate-pulse" style={{ animationDelay: "0.3s" }}></div>
               </div>
               <p className="text-sm font-medium text-gray-600">Loading shifts</p>
               <p className="text-xs text-gray-500 mt-1">Please wait...</p>
@@ -290,7 +290,7 @@ export default function ShiftsPage() {
           </div>
           <Button 
             color="primary" 
-            className="bg-[#75CAA6] hover:bg-[#5fb992]"
+            className="bg-[#3B82F6] hover:bg-[#2563EB]"
             startContent={<Icon icon="solar:add-circle-linear" />}
             onClick={() => {
               setSelectedShift(null);
@@ -299,7 +299,7 @@ export default function ShiftsPage() {
                 startTime: '09:00',
                 endTime: '17:00',
                 days: [],
-                color: '#75CAA6'
+                color: '#3B82F6'
               });
               setErrors({});
               onOpen();
@@ -346,13 +346,13 @@ export default function ShiftsPage() {
                 const isToday = format(new Date(), 'yyyy-MM-dd') === date;
                 
                 return (
-                  <Card key={date} className={`border ${isToday ? 'border-[#75CAA6]' : 'border-gray-200'}`}>
-                    <CardHeader className={`flex justify-between items-center pb-2 ${isToday ? 'bg-[#75CAA6]/10' : ''}`}>
+                  <Card key={date} className={`border ${isToday ? 'border-[#3B82F6]' : 'border-gray-200'}`}>
+                    <CardHeader className={`flex justify-between items-center pb-2 ${isToday ? 'bg-[#3B82F6]/10' : ''}`}>
                       <div className="flex items-center gap-2">
-                        <Icon icon="solar:calendar-date-linear" className={isToday ? 'text-[#75CAA6]' : 'text-gray-500'} />
+                        <Icon icon="solar:calendar-date-linear" className={isToday ? 'text-[#3B82F6]' : 'text-gray-500'} />
                         <h3 className="font-semibold">
                           {formattedDate}
-                          {isToday && <span className="ml-2 text-xs font-normal bg-[#75CAA6] text-white px-2 py-0.5 rounded-full">Today</span>}
+                          {isToday && <span className="ml-2 text-xs font-normal bg-[#3B82F6] text-white px-2 py-0.5 rounded-full">Today</span>}
                         </h3>
                       </div>
                     </CardHeader>
@@ -539,7 +539,7 @@ export default function ShiftsPage() {
                   {!searchQuery && (
                     <Button 
                       color="primary" 
-                      className="bg-[#75CAA6] hover:bg-[#5fb992]"
+                      className="bg-[#3B82F6] hover:bg-[#2563EB]"
                       startContent={<Icon icon="solar:add-circle-linear" />}
                       onClick={() => {
                         setSelectedShift(null);
@@ -548,7 +548,7 @@ export default function ShiftsPage() {
                           startTime: '09:00',
                           endTime: '17:00',
                           days: [],
-                          color: '#75CAA6'
+                          color: '#3B82F6'
                         });
                         setErrors({});
                         onOpen();
@@ -632,7 +632,7 @@ export default function ShiftsPage() {
                       key={day}
                       variant={newShift.days.includes(day) ? "solid" : "bordered"}
                       color={newShift.days.includes(day) ? "primary" : "default"}
-                      className={newShift.days.includes(day) ? "bg-[#75CAA6]" : ""}
+                      className={newShift.days.includes(day) ? "bg-[#3B82F6]" : ""}
                       onClick={() => handleToggleDay(day)}
                     >
                       {day.substring(0, 3)}
@@ -652,7 +652,7 @@ export default function ShiftsPage() {
                       key={color.value}
                       className={`w-8 h-8 rounded-full cursor-pointer transition-all ${
                         newShift.color === color.value 
-                          ? 'ring-2 ring-offset-2 ring-[#75CAA6] scale-110' 
+                          ? 'ring-2 ring-offset-2 ring-[#3B82F6] scale-110' 
                           : 'hover:scale-105'
                       }`}
                       style={{ backgroundColor: color.value }}
@@ -670,7 +670,7 @@ export default function ShiftsPage() {
             </Button>
             <Button 
               color="primary" 
-              className="bg-[#75CAA6] hover:bg-[#5fb992]"
+              className="bg-[#3B82F6] hover:bg-[#2563EB]"
               onClick={handleCreateShift}
             >
               {selectedShift ? 'Save Changes' : 'Create Shift'}
