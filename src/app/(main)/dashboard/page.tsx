@@ -42,14 +42,25 @@ export default function DashboardPage() {
     
     console.log('Redirect check - restaurants:', restaurants.length, 'isRedirecting:', isRedirecting, 'redirectAttempts:', redirectAttempts);
     
+    // Check localStorage for restaurant data (fallback)
+    const hasRestaurantsInStorage = localStorage.getItem('hasRestaurants') === 'true';
+    const currentRestaurantId = localStorage.getItem('currentRestaurantId');
+    
+    console.log('localStorage check - hasRestaurants:', hasRestaurantsInStorage, 'currentRestaurantId:', currentRestaurantId);
+    
     // Only redirect if we haven't already tried too many times (prevent infinite loops)
-    if (userRole === 'USER' && restaurants.length === 0 && !isRedirecting && redirectAttempts < 2) {
-      console.log('No restaurants found, redirecting to onboarding page...');
+    // AND we don't have restaurants in React state OR localStorage
+    const noRestaurants = restaurants.length === 0 && !hasRestaurantsInStorage;
+    
+    if (userRole === 'USER' && noRestaurants && !isRedirecting && redirectAttempts < 2) {
+      console.log('No restaurants found in state or localStorage, redirecting to onboarding page...');
       setIsRedirecting(true);
       setRedirectAttempts(prev => prev + 1);
       router.push('/onboarding');
     } else if (redirectAttempts >= 2) {
       console.log('Too many redirect attempts, showing dashboard anyway');
+    } else if (hasRestaurantsInStorage && currentRestaurantId) {
+      console.log('Found restaurant data in localStorage, staying on dashboard');
     }
   }, [userRole, restaurants, router, isRedirecting, redirectAttempts, isInitializing, isLoadingRestaurants]);
 

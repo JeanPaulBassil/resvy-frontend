@@ -26,8 +26,19 @@ export const useRestaurant = () => {
 
 export const RestaurantProvider = ({ children }: { children: ReactNode }) => {
   const pathname = usePathname();
+  
+  // Use exact path matching for auth pages
   const isAuthPage = pathname === '/login' || pathname === '/signup';
+  
+  // Check logged in state
   const isLoggedIn = typeof window !== 'undefined' && localStorage.getItem('loggedIn') === 'true';
+  
+  // Log current state for debugging
+  if (typeof window !== 'undefined') {
+    console.log('RestaurantProvider - current path:', pathname);
+    console.log('RestaurantProvider - isAuthPage:', isAuthPage);
+    console.log('RestaurantProvider - isLoggedIn:', isLoggedIn);
+  }
   
   // Only fetch restaurant data if we're on a non-auth page and logged in
   const shouldFetchData = !isAuthPage && isLoggedIn;

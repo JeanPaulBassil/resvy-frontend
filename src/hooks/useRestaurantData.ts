@@ -9,9 +9,18 @@ export function useRestaurantData() {
   const { setConnectionError } = useApiError();
   const pathname = usePathname();
   
-  // Check if we're on an auth page or not logged in
+  // Check if we're on an auth page (login or signup ONLY) - use exact path matching
   const isAuthPage = pathname === '/login' || pathname === '/signup';
+  
+  // Check if user is logged in
   const isLoggedIn = typeof window !== 'undefined' && localStorage.getItem('loggedIn') === 'true';
+  
+  // Log current state for debugging
+  if (typeof window !== 'undefined') {
+    console.log('useRestaurantData - current path:', pathname);
+    console.log('useRestaurantData - isAuthPage:', isAuthPage);
+    console.log('useRestaurantData - isLoggedIn:', isLoggedIn);
+  }
   
   // Only fetch data if we're not on an auth page and we're logged in
   const enabled = !isAuthPage && isLoggedIn;
@@ -31,6 +40,11 @@ export function useRestaurantData() {
           if (!localStorage.getItem('currentRestaurantId')) {
             localStorage.setItem('currentRestaurantId', restaurants[0].id);
           }
+        } else {
+          // Clear flags if no restaurants were found
+          console.log('No restaurants found, clearing localStorage flags');
+          localStorage.removeItem('hasRestaurants');
+          localStorage.removeItem('currentRestaurantId');
         }
         
         return {
