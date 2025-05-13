@@ -1,24 +1,20 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 
 import { NonAdminOnly } from '@/components/auth/RoleBasedAccess';
 import { useAuth } from '@/components/providers/AuthProvider';
 import ReservationStats from '@/components/dashboard/ReservationStats';
 import { useRestaurantData } from '@/hooks/useRestaurantData';
-import { useRestaurant } from '@/components/providers/RestaurantProvider';
 
 export default function DashboardPage() {
   const { user, userRole, isInitializing, refreshUserData } = useAuth();
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const router = useRouter();
-  const [isRedirecting, setIsRedirecting] = useState(false);
-  const [redirectAttempts, setRedirectAttempts] = useState(0);
   
-  // Use our hooks to fetch restaurant data
+  // Use our new hook to fetch restaurant data
+  // We're not using the data directly here, but the hook is still needed
+  // for the RestaurantProvider to work properly
   useRestaurantData();
-  const { restaurants, isLoading: isLoadingRestaurants } = useRestaurant();
 
   // Automatically fetch user data if authenticated but no role
   useEffect(() => {
@@ -34,55 +30,23 @@ export default function DashboardPage() {
   }, [user, userRole, refreshUserData, isRefreshing]);
 
   // Handle redirect to onboarding if user has no restaurants
-  useEffect(() => {
-    // Prevent checking too soon after a recent navigation
-    const lastRedirectTime = sessionStorage.getItem('lastRedirectTime');
-    const currentTime = Date.now();
+  // useEffect(() => {
+  //   const hasRestaurants = restaurantData?.hasRestaurants;
     
-    if (lastRedirectTime && (currentTime - parseInt(lastRedirectTime)) < 1000) {
-      console.log('Dashboard - Skipping redirect check, too soon since last navigation');
-      return;
-    }
+  //   console.log('Redirect check - hasRestaurants:', hasRestaurants, 'isRedirecting:', isRedirecting, 'redirectAttempts:', redirectAttempts);
     
-    // Only proceed if we've finished loading both user and restaurant data
-    if (isInitializing || isLoadingRestaurants || isRedirecting) {
-      return;
-    }
-    
-    console.log('Redirect check - restaurants:', restaurants.length, 'isRedirecting:', isRedirecting, 'redirectAttempts:', redirectAttempts);
-    
-    // Check localStorage for restaurant data (fallback)
-    const hasRestaurantsInStorage = localStorage.getItem('hasRestaurants') === 'true';
-    const currentRestaurantId = localStorage.getItem('currentRestaurantId');
-    
-    console.log('localStorage check - hasRestaurants:', hasRestaurantsInStorage, 'currentRestaurantId:', currentRestaurantId);
-    
-    // Only redirect if we haven't already tried too many times (prevent infinite loops)
-    // AND we don't have restaurants in React state OR localStorage
-    const noRestaurants = restaurants.length === 0 && !hasRestaurantsInStorage;
-    
-    if (userRole === 'USER' && noRestaurants && !isRedirecting && redirectAttempts < 3) {
-      console.log('No restaurants found in state or localStorage, redirecting to onboarding page...');
-      setIsRedirecting(true);
-      setRedirectAttempts(prev => prev + 1);
-      // Record the redirect time
-      sessionStorage.setItem('lastRedirectTime', currentTime.toString());
-      router.push('/onboarding');
-    } else if (redirectAttempts >= 3) {
-      console.log('Too many redirect attempts, showing dashboard anyway');
-    } else if (hasRestaurantsInStorage && currentRestaurantId) {
-      console.log('Found restaurant data in localStorage, staying on dashboard');
-      
-      // If localStorage has data but state doesn't, force a refresh
-      if (restaurants.length === 0) {
-        console.log('Found data in localStorage but not in state, refreshing restaurant data');
-        // This will trigger a refetch in the useRestaurantData hook
-        localStorage.setItem('forceRefreshRestaurants', Date.now().toString());
-      }
-    }
-  }, [userRole, restaurants, router, isRedirecting, redirectAttempts, isInitializing, isLoadingRestaurants]);
+  //   // Only redirect if we haven't already tried too many times (prevent infinite loops)
+  //   if (userRole === 'USER' && hasRestaurants === false && !isRedirecting && redirectAttempts < 2) {
+  //     console.log('Redirecting to onboarding page...');
+  //     setIsRedirecting(true);
+  //     setRedirectAttempts(prev => prev + 1);
+  //     router.push('/onboarding');
+  //   } else if (redirectAttempts >= 2) {
+  //     console.log('Too many redirect attempts, showing dashboard anyway');
+  //   }
+  // }, [userRole, restaurantData, router, isRedirecting, redirectAttempts]);
 
-  if (isInitializing || isRefreshing || isLoadingRestaurants) {
+  if (isInitializing || isRefreshing) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <div className="text-center">
@@ -98,9 +62,9 @@ export default function DashboardPage() {
   }
 
   // Show a message while redirecting
-  if (isRedirecting) {
-    return <div className="p-8">Redirecting to onboarding...</div>;
-  }
+  // if (isRedirecting) {
+  //   return <div className="p-8">Redirecting to onboarding...</div>;
+  // }
 
   return (
     <div className="p-8">

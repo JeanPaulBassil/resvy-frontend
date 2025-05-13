@@ -76,29 +76,11 @@ export const restaurantApi = {
   // Get restaurants owned by the current user
   getMyRestaurants: async (): Promise<Restaurant[]> => {
     try {
-      // Check if the user is logged in - multiple ways to verify this
-      const hasLoginFlag = typeof window !== 'undefined' && localStorage.getItem('loggedIn') === 'true';
-      const hasToken = typeof window !== 'undefined' && 
-        !!(sessionStorage.getItem('token') || localStorage.getItem('token'));
-      
-      // Combine checks to get final login state
-      const isLoggedIn = hasLoginFlag || hasToken;
-      
-      // Check if we're on an auth page (login or signup ONLY)
-      // Note: onboarding is NOT an auth page
-      const isAuthPage = typeof window !== 'undefined' && (
-        window.location.pathname === '/login' || 
-        window.location.pathname === '/signup'
-      );
-      
-      // Log the current path for debugging
-      if (typeof window !== 'undefined') {
-        console.log('Current path:', window.location.pathname);
-        console.log('hasLoginFlag:', hasLoginFlag);
-        console.log('hasToken:', hasToken);
-        console.log('isLoggedIn:', isLoggedIn);
-        console.log('isAuthPage:', isAuthPage);
-      }
+      // First check if the user is logged in to prevent unnecessary requests
+      const isLoggedIn = localStorage.getItem('loggedIn') === 'true';
+      const isAuthPage = typeof window !== 'undefined' && 
+        (window.location.pathname.includes('/login') || 
+         window.location.pathname.includes('/signup'));
       
       // Don't make the request if we're not logged in or we're on an auth page
       if (!isLoggedIn || isAuthPage) {
@@ -109,17 +91,7 @@ export const restaurantApi = {
       console.log('Making API request to /restaurants/my-restaurants');
       const response = await axiosInstance.get<Restaurant[]>('/restaurants/my-restaurants');
       console.log('API response received successfully');
-      const restaurants = extractData(response);
-      
-      // Update localStorage flags if we have restaurants
-      if (restaurants.length > 0) {
-        localStorage.setItem('hasRestaurants', 'true');
-        if (!localStorage.getItem('currentRestaurantId') && restaurants[0]) {
-          localStorage.setItem('currentRestaurantId', restaurants[0].id);
-        }
-      }
-      
-      return restaurants;
+      return extractData(response);
     } catch (error: any) {
       console.error('Error in getMyRestaurants:', error.message);
       

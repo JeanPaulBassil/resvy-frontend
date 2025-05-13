@@ -21,27 +21,14 @@ export default function OnboardingPage() {
 
   // Handle redirects based on state
   useEffect(() => {
-    // Prevent infinite loops by checking if we've reloaded the page
-    const lastRedirectTime = sessionStorage.getItem('lastRedirectTime');
-    const currentTime = Date.now();
-    
-    // If we've redirected in the last second, don't redirect again
-    if (lastRedirectTime && (currentTime - parseInt(lastRedirectTime)) < 1000) {
-      console.log('Preventing redirection loop - too soon since last redirect');
-      setShouldRedirectToDashboard(false);
-      return;
-    }
-    
     if (shouldRedirectToLogin) {
       router.push('/login');
     } else if (shouldRedirectToAdmin) {
       router.push('/admin');
-    } else if (shouldRedirectToDashboard && redirectAttempts < 5) {
+    } else if (shouldRedirectToDashboard && redirectAttempts < 2) {
       setRedirectAttempts((prev) => prev + 1);
-      // Store the time of this redirect
-      sessionStorage.setItem('lastRedirectTime', currentTime.toString());
       router.push('/dashboard');
-    } else if (redirectAttempts >= 5) {
+    } else if (redirectAttempts >= 2) {
       // If we've tried to redirect too many times, just show the onboarding page
       console.log('Too many redirect attempts, showing onboarding page anyway');
       setShouldRedirectToDashboard(false);
@@ -100,21 +87,8 @@ export default function OnboardingPage() {
           // If user has restaurants, always redirect to dashboard
           if (hasAnyRestaurants) {
             console.log('User has restaurants, redirecting to dashboard...');
-            
-            // Save the hasRestaurants flag to localStorage to help with future checks
-            localStorage.setItem('hasRestaurants', 'true');
-            
-            // Save the first restaurant as current if not already saved
-            if (restaurants[0] && !localStorage.getItem('currentRestaurantId')) {
-              localStorage.setItem('currentRestaurantId', restaurants[0].id);
-              console.log('Saved first restaurant as current:', restaurants[0].id);
-            }
-            
             setShouldRedirectToDashboard(true);
           } else {
-            // No restaurants found
-            localStorage.removeItem('hasRestaurants');
-            localStorage.removeItem('currentRestaurantId');
             setIsLoading(false);
           }
         } catch (error: unknown) {
@@ -174,16 +148,6 @@ export default function OnboardingPage() {
             return;
           }
 
-          // After all retries, check localStorage as a fallback
-          const hasRestaurantsInStorage = localStorage.getItem('hasRestaurants') === 'true';
-          const currentRestaurantId = localStorage.getItem('currentRestaurantId');
-          
-          if (hasRestaurantsInStorage && currentRestaurantId) {
-            console.log('Failed to fetch restaurants but found restaurant data in localStorage');
-            setShouldRedirectToDashboard(true);
-            return;
-          }
-          
           // After all retries, default to showing the onboarding page
           console.log('All retries failed, showing onboarding page');
           setIsLoading(false);

@@ -178,38 +178,18 @@ export default function AppWrapper() {
   // Check if user has any restaurants
   useEffect(() => {
     const checkUserRestaurants = () => {
-      // Skip the check if we're already on the onboarding page to prevent loops
-      if (pathname === '/onboarding') {
-        return;
-      }
-      
       if (user && userRole === 'USER' && !isLoadingRestaurants) {
-        // First check localStorage for restaurant data
-        const hasRestaurantsInStorage = localStorage.getItem('hasRestaurants') === 'true';
-        const currentRestaurantId = localStorage.getItem('currentRestaurantId');
-        
-        console.log('AppWrapper - localStorage check:', 
-          'hasRestaurants:', hasRestaurantsInStorage, 
-          'currentRestaurantId:', currentRestaurantId
-        );
-        
-        const hasAnyRestaurants = restaurants.length > 0 || (hasRestaurantsInStorage && currentRestaurantId);
+        const hasAnyRestaurants = restaurants.length > 0;
 
-        // Only redirect if both state and localStorage indicate no restaurants
+        // Set redirect flag if user has no restaurants
         if (!hasAnyRestaurants) {
-          console.log('AppWrapper - No restaurants found in state or localStorage, redirecting to onboarding');
           setShouldRedirect(true);
-        } else {
-          console.log('AppWrapper - Found restaurant data, staying on current page');
-          setShouldRedirect(false);
         }
       }
     };
 
-    // Only run this after a short delay to allow other state to initialize
-    const timeoutId = setTimeout(checkUserRestaurants, 500);
-    return () => clearTimeout(timeoutId);
-  }, [user, userRole, restaurants, isLoadingRestaurants, isInitializing, pathname]);
+    checkUserRestaurants();
+  }, [user, userRole, restaurants, isLoadingRestaurants, isInitializing]);
 
   // Determine which sidebar items to show based on user role
   const sidebarItems = userRole === 'ADMIN' ? adminItems : userItems;

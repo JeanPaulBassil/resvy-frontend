@@ -26,26 +26,8 @@ export const useRestaurant = () => {
 
 export const RestaurantProvider = ({ children }: { children: ReactNode }) => {
   const pathname = usePathname();
-  
-  // Use exact path matching for auth pages
   const isAuthPage = pathname === '/login' || pathname === '/signup';
-  
-  // Check logged in state more thoroughly - check for token as well
-  const hasLoginFlag = typeof window !== 'undefined' && localStorage.getItem('loggedIn') === 'true';
-  const hasToken = typeof window !== 'undefined' && 
-    !!(sessionStorage.getItem('token') || localStorage.getItem('token'));
-  
-  // Combine checks to get final login state
-  const isLoggedIn = hasLoginFlag || hasToken;
-  
-  // Log current state for debugging
-  if (typeof window !== 'undefined') {
-    console.log('RestaurantProvider - current path:', pathname);
-    console.log('RestaurantProvider - isAuthPage:', isAuthPage);
-    console.log('RestaurantProvider - hasLoginFlag:', hasLoginFlag);
-    console.log('RestaurantProvider - hasToken:', hasToken);
-    console.log('RestaurantProvider - isLoggedIn:', isLoggedIn);
-  }
+  const isLoggedIn = typeof window !== 'undefined' && localStorage.getItem('loggedIn') === 'true';
   
   // Only fetch restaurant data if we're on a non-auth page and logged in
   const shouldFetchData = !isAuthPage && isLoggedIn;
@@ -63,32 +45,15 @@ export const RestaurantProvider = ({ children }: { children: ReactNode }) => {
 
   // Add restaurant function
   const addRestaurant = async (data: CreateRestaurantDto): Promise<Restaurant> => {
-    try {
-      console.log('Creating new restaurant:', data.name);
-      const newRestaurant = await createRestaurantMutation.mutateAsync(data);
-      console.log('Restaurant created successfully:', newRestaurant.id);
-      
-      // Set flags in localStorage immediately
-      localStorage.setItem('hasRestaurants', 'true');
-      localStorage.setItem('currentRestaurantId', newRestaurant.id);
-      
-      // Set the current restaurant in state
+    const newRestaurant = await createRestaurantMutation.mutateAsync(data);
+    await refetch();
+    
+    // If this is the first restaurant, set it as current
+    if (restaurants.length === 0) {
       handleSetCurrentRestaurant(newRestaurant);
-      
-      // Force an immediate refresh of the restaurant data
-      await refetch();
-      
-      // Update the local restaurants array to include the new restaurant
-      // This helps in case the refetch doesn't immediately update the state
-      const updatedRestaurants = [...restaurants, newRestaurant];
-      
-      console.log('Restaurant creation completed. Total restaurants:', updatedRestaurants.length);
-      
-      return newRestaurant;
-    } catch (error) {
-      console.error('Error creating restaurant:', error);
-      throw error;
     }
+    
+    return newRestaurant;
   };
 
   // Only update current restaurant if we should fetch data

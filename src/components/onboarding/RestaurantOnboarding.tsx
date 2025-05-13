@@ -36,7 +36,7 @@ export default function RestaurantOnboarding({ className }: RestaurantOnboarding
   const [isLoading, setIsLoading] = useState(true);
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const router = useRouter();
-  const { refetchRestaurants, setCurrentRestaurant, currentRestaurant } = useRestaurant();
+  const { refetchRestaurants, setCurrentRestaurant } = useRestaurant();
 
   // Fetch user's restaurants on component mount
   useEffect(() => {
@@ -129,13 +129,6 @@ export default function RestaurantOnboarding({ className }: RestaurantOnboarding
         email: formData.email,
       });
       
-      console.log('Restaurant created successfully:', newRestaurant.id);
-      
-      // Set localStorage flags immediately
-      localStorage.setItem('hasRestaurants', 'true');
-      localStorage.setItem('currentRestaurantId', newRestaurant.id);
-      console.log('Updated localStorage with new restaurant info');
-      
       // Refetch restaurants to update the list
       await refetchRestaurants();
       
@@ -186,54 +179,7 @@ export default function RestaurantOnboarding({ className }: RestaurantOnboarding
   };
 
   const handleGoToDashboard = () => {
-    // Add loading state
-    setIsLoading(true);
-    
-    // Force-set the localStorage flags to ensure dashboard knows we have restaurants
-    localStorage.setItem('hasRestaurants', 'true');
-    
-    // First refetch restaurants to ensure data is up to date
-    refetchRestaurants()
-      .then(() => {
-        // If we have a current restaurant, use it
-        if (currentRestaurant) {
-          localStorage.setItem('currentRestaurantId', currentRestaurant.id);
-          console.log('Saved currentRestaurantId to localStorage:', currentRestaurant.id);
-        } 
-        // Otherwise get one from the completedSteps logic
-        else {
-          const restaurants = restaurantApi.getMyRestaurants().then(restaurants => {
-            if (restaurants.length > 0) {
-              localStorage.setItem('currentRestaurantId', restaurants[0].id);
-              console.log('Set currentRestaurantId to first restaurant:', restaurants[0].id);
-            }
-            
-            // Navigate to dashboard after ensuring we have restaurant data
-            console.log('Navigating to dashboard with forced localStorage flags');
-            router.push('/dashboard');
-          });
-          return;
-        }
-        
-        // Set a small delay to ensure React Query has time to update
-        setTimeout(() => {
-          // Navigate to dashboard
-          console.log('Navigating to dashboard...');
-          router.push('/dashboard');
-        }, 500);
-      })
-      .catch((error) => {
-        console.error('Error refetching restaurants before dashboard navigation:', error);
-        
-        // Try navigation anyway if we have localStorage data
-        if (localStorage.getItem('hasRestaurants') === 'true' && 
-            localStorage.getItem('currentRestaurantId')) {
-          console.log('Navigating to dashboard despite error (using localStorage data)');
-          router.push('/dashboard');
-        } else {
-          setIsLoading(false);
-        }
-      });
+    router.push('/dashboard');
   };
 
   // Get updated onboarding items with completion status
