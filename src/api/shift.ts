@@ -2,7 +2,8 @@ import axiosInstance from './axios';
 import { 
   Shift, 
   CreateShiftDto, 
-  UpdateShiftDto 
+  UpdateShiftDto,
+  ShiftReservationCount 
 } from '@/types/shift';
 import { extractData } from './apiUtils';
 
@@ -44,5 +45,17 @@ export const shiftApi = {
   deleteShift: async (shiftId: string, restaurantId: string): Promise<void> => {
     const response = await axiosInstance.delete(`/shifts/${shiftId}?restaurantId=${restaurantId}`);
     return extractData<void>(response);
+  },
+  
+  // Get reservation counts for shifts within a date range
+  getShiftReservationCounts: async (
+    restaurantId: string, 
+    startDate: string, 
+    endDate: string
+  ): Promise<ShiftReservationCount[]> => {
+    const response = await axiosInstance.get(
+      `/shifts/reservations?restaurantId=${restaurantId}&startDate=${startDate}&endDate=${endDate}`
+    );
+    return extractData<ShiftReservationCount[]>(response);
   }
 }; 

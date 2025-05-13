@@ -40,4 +40,10 @@ export interface UpdateShiftDto {
   days?: string[];
   color?: string;
   active?: boolean;
+}
+
+export interface ShiftReservationCount {
+  shiftId: string;
+  date: string;
+  count: number;
 } 

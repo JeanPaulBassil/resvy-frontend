@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   Button, 
   Card, 
@@ -26,8 +26,15 @@ import {
 import { Icon } from '@iconify/react';
 import { format, addDays, isAfter, parseISO, isValid } from 'date-fns';
 import { useRestaurant } from '@/components/providers/RestaurantProvider';
-import { Shift, UpcomingShift, CreateShiftDto } from '@/types/shift';
-import { useShifts, useCreateShift, useDeleteShift, toggleShiftActiveDirectly, updateShiftDirectly } from '@/hooks/useShift';
+import { Shift, UpcomingShift, CreateShiftDto, ShiftReservationCount } from '@/types/shift';
+import { 
+  useShifts, 
+  useCreateShift, 
+  useDeleteShift, 
+  toggleShiftActiveDirectly, 
+  updateShiftDirectly,
+  useShiftReservationCounts 
+} from '@/hooks/useShift';
 import { useToast } from '@/contexts/ToastContext';
 
 interface FormErrors {
@@ -36,34 +43,6 @@ interface FormErrors {
   endTime?: string;
   days?: string;
 }
-
-// Generate upcoming shifts based on shift definitions
-const generateUpcomingShifts = (shifts: Shift[]): UpcomingShift[] => {
-  const upcomingShifts: UpcomingShift[] = [];
-  const today = new Date();
-  
-  for (let i = 0; i < 14; i++) {
-    const date = addDays(today, i);
-    const dayName = format(date, 'EEEE');
-    
-    shifts.forEach(shift => {
-      if (shift.days.includes(dayName) && shift.active) {
-        upcomingShifts.push({
-          id: `${shift.id}-${i}`,
-          shiftId: shift.id,
-          name: shift.name,
-          date: format(date, 'yyyy-MM-dd'),
-          startTime: shift.startTime,
-          endTime: shift.endTime,
-          color: shift.color,
-          reservations: Math.floor(Math.random() * 20)
-        });
-      }
-    });
-  }
-  
-  return upcomingShifts;
-};
 
 // Generate time options in 30-minute intervals
 const generateTimeOptions = (): string[] => {
@@ -99,6 +78,7 @@ export default function ShiftsPage() {
   
   // Use React Query hooks
   const { data: shifts = [], isLoading: isLoadingShifts, refetch: refetchShifts } = useShifts(restaurantId);
+  const { data: reservationCounts = [], isLoading: isLoadingReservationCounts } = useShiftReservationCounts(restaurantId);
   const createShiftMutation = useCreateShift(restaurantId);
   const deleteShiftMutation = useDeleteShift(restaurantId);
   
@@ -121,12 +101,49 @@ export default function ShiftsPage() {
   });
   const [errors, setErrors] = useState<FormErrors>({});
 
-  // Update upcoming shifts when shifts data changes
+  // Memoize the generateUpcomingShifts function to prevent recreating it on every render
+  const generateUpcomingShifts = useCallback((shiftList: Shift[], reservationCountsList: ShiftReservationCount[] = []): UpcomingShift[] => {
+    const upcomingShifts: UpcomingShift[] = [];
+    const today = new Date();
+    
+    // Create a lookup map for reservation counts
+    const reservationCountMap: Record<string, number> = {};
+    reservationCountsList.forEach(count => {
+      const key = `${count.shiftId}-${count.date}`;
+      reservationCountMap[key] = count.count;
+    });
+    
+    for (let i = 0; i < 14; i++) {
+      const date = addDays(today, i);
+      const dayName = format(date, 'EEEE');
+      const formattedDate = format(date, 'yyyy-MM-dd');
+      
+      shiftList.forEach(shift => {
+        if (shift.days.includes(dayName) && shift.active) {
+          const shiftDateKey = `${shift.id}-${formattedDate}`;
+          upcomingShifts.push({
+            id: shiftDateKey,
+            shiftId: shift.id,
+            name: shift.name,
+            date: formattedDate,
+            startTime: shift.startTime,
+            endTime: shift.endTime,
+            color: shift.color,
+            reservations: reservationCountMap[shiftDateKey] || 0
+          });
+        }
+      });
+    }
+    
+    return upcomingShifts;
+  }, []);
+
+  // Update upcoming shifts only when shifts or reservation counts change significantly
   useEffect(() => {
     if (shifts.length > 0) {
-      setUpcomingShifts(generateUpcomingShifts(shifts));
+      setUpcomingShifts(generateUpcomingShifts(shifts, reservationCounts));
     }
-  }, [shifts]);
+  }, [shifts, JSON.stringify(reservationCounts), generateUpcomingShifts]);
 
   // Filter shifts based on search query and filter
   const filteredShifts = shifts.filter(shift => {
@@ -256,7 +273,7 @@ export default function ShiftsPage() {
   ];
 
   // Show loading state
-  if (isLoadingShifts) {
+  if (isLoadingShifts || isLoadingReservationCounts) {
     return (
       <div className="p-4 md:p-6 max-w-[1600px] mx-auto">
         <div className="bg-white rounded-xl shadow-sm p-6">

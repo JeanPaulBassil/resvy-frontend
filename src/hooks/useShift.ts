@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Shift, CreateShiftDto, UpdateShiftDto } from '@/types/shift';
+import { Shift, CreateShiftDto, UpdateShiftDto, ShiftReservationCount } from '@/types/shift';
 import { shiftApi } from '@/api/shift';
 import { useToast } from '@/contexts/ToastContext';
+import { format, addDays } from 'date-fns';
 
 // React Query keys
 export const shiftKeys = {
@@ -10,6 +11,9 @@ export const shiftKeys = {
   list: (restaurantId: string) => [...shiftKeys.lists(), restaurantId] as const,
   details: () => [...shiftKeys.all, 'detail'] as const,
   detail: (shiftId: string) => [...shiftKeys.details(), shiftId] as const,
+  reservationCounts: () => [...shiftKeys.all, 'reservationCounts'] as const,
+  dateRangeReservationCounts: (restaurantId: string, startDate: string, endDate: string) => 
+    [...shiftKeys.reservationCounts(), restaurantId, startDate, endDate] as const,
 };
 
 // Hooks
@@ -26,6 +30,18 @@ export const useShift = (shiftId: string, restaurantId: string) => {
     queryKey: shiftKeys.detail(shiftId),
     queryFn: () => shiftApi.getShift(shiftId, restaurantId),
     enabled: !!shiftId && !!restaurantId,
+  });
+};
+
+export const useShiftReservationCounts = (restaurantId: string, daysAhead: number = 14) => {
+  const today = new Date();
+  const startDate = format(today, 'yyyy-MM-dd');
+  const endDate = format(addDays(today, daysAhead - 1), 'yyyy-MM-dd');
+
+  return useQuery({
+    queryKey: shiftKeys.dateRangeReservationCounts(restaurantId, startDate, endDate),
+    queryFn: () => shiftApi.getShiftReservationCounts(restaurantId, startDate, endDate),
+    enabled: !!restaurantId,
   });
 };
 
