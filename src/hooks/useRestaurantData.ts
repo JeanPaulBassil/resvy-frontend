@@ -20,7 +20,19 @@ export function useRestaurantData() {
     queryKey: ['restaurants'],
     queryFn: async () => {
       try {
+        console.log('Fetching restaurants data via useRestaurantData hook');
         const restaurants = await restaurantApi.getMyRestaurants();
+        console.log('useRestaurantData: Got', restaurants.length, 'restaurants');
+        
+        // If we have restaurants, update localStorage flags
+        if (restaurants.length > 0) {
+          localStorage.setItem('hasRestaurants', 'true');
+          // If we don't have a current restaurant set, use the first one
+          if (!localStorage.getItem('currentRestaurantId')) {
+            localStorage.setItem('currentRestaurantId', restaurants[0].id);
+          }
+        }
+        
         return {
           restaurants,
           hasRestaurants: restaurants.length > 0,
@@ -39,5 +51,11 @@ export function useRestaurantData() {
     enabled,
     retry: 2,
     retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 10000),
+    // Reduced staleTime to ensure more frequent refreshes in production
+    staleTime: 30000, // 30 seconds
+    // Set a reasonable cache time
+    gcTime: 5 * 60 * 1000, // 5 minutes
+    // Ensure we refetch when the component is remounted
+    refetchOnMount: true
   });
 } 

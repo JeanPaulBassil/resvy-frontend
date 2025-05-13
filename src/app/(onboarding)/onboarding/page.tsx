@@ -87,8 +87,21 @@ export default function OnboardingPage() {
           // If user has restaurants, always redirect to dashboard
           if (hasAnyRestaurants) {
             console.log('User has restaurants, redirecting to dashboard...');
+            
+            // Save the hasRestaurants flag to localStorage to help with future checks
+            localStorage.setItem('hasRestaurants', 'true');
+            
+            // Save the first restaurant as current if not already saved
+            if (restaurants[0] && !localStorage.getItem('currentRestaurantId')) {
+              localStorage.setItem('currentRestaurantId', restaurants[0].id);
+              console.log('Saved first restaurant as current:', restaurants[0].id);
+            }
+            
             setShouldRedirectToDashboard(true);
           } else {
+            // No restaurants found
+            localStorage.removeItem('hasRestaurants');
+            localStorage.removeItem('currentRestaurantId');
             setIsLoading(false);
           }
         } catch (error: unknown) {
@@ -148,6 +161,16 @@ export default function OnboardingPage() {
             return;
           }
 
+          // After all retries, check localStorage as a fallback
+          const hasRestaurantsInStorage = localStorage.getItem('hasRestaurants') === 'true';
+          const currentRestaurantId = localStorage.getItem('currentRestaurantId');
+          
+          if (hasRestaurantsInStorage && currentRestaurantId) {
+            console.log('Failed to fetch restaurants but found restaurant data in localStorage');
+            setShouldRedirectToDashboard(true);
+            return;
+          }
+          
           // After all retries, default to showing the onboarding page
           console.log('All retries failed, showing onboarding page');
           setIsLoading(false);

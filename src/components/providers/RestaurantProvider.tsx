@@ -45,15 +45,32 @@ export const RestaurantProvider = ({ children }: { children: ReactNode }) => {
 
   // Add restaurant function
   const addRestaurant = async (data: CreateRestaurantDto): Promise<Restaurant> => {
-    const newRestaurant = await createRestaurantMutation.mutateAsync(data);
-    await refetch();
-    
-    // If this is the first restaurant, set it as current
-    if (restaurants.length === 0) {
+    try {
+      console.log('Creating new restaurant:', data.name);
+      const newRestaurant = await createRestaurantMutation.mutateAsync(data);
+      console.log('Restaurant created successfully:', newRestaurant.id);
+      
+      // Set flags in localStorage immediately
+      localStorage.setItem('hasRestaurants', 'true');
+      localStorage.setItem('currentRestaurantId', newRestaurant.id);
+      
+      // Set the current restaurant in state
       handleSetCurrentRestaurant(newRestaurant);
+      
+      // Force an immediate refresh of the restaurant data
+      await refetch();
+      
+      // Update the local restaurants array to include the new restaurant
+      // This helps in case the refetch doesn't immediately update the state
+      const updatedRestaurants = [...restaurants, newRestaurant];
+      
+      console.log('Restaurant creation completed. Total restaurants:', updatedRestaurants.length);
+      
+      return newRestaurant;
+    } catch (error) {
+      console.error('Error creating restaurant:', error);
+      throw error;
     }
-    
-    return newRestaurant;
   };
 
   // Only update current restaurant if we should fetch data

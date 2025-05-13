@@ -1,20 +1,24 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import { NonAdminOnly } from '@/components/auth/RoleBasedAccess';
 import { useAuth } from '@/components/providers/AuthProvider';
 import ReservationStats from '@/components/dashboard/ReservationStats';
 import { useRestaurantData } from '@/hooks/useRestaurantData';
+import { useRestaurant } from '@/components/providers/RestaurantProvider';
 
 export default function DashboardPage() {
   const { user, userRole, isInitializing, refreshUserData } = useAuth();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const router = useRouter();
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [redirectAttempts, setRedirectAttempts] = useState(0);
   
-  // Use our new hook to fetch restaurant data
-  // We're not using the data directly here, but the hook is still needed
-  // for the RestaurantProvider to work properly
+  // Use our hooks to fetch restaurant data
   useRestaurantData();
+  const { restaurants, isLoading: isLoadingRestaurants } = useRestaurant();
 
   // Automatically fetch user data if authenticated but no role
   useEffect(() => {
@@ -30,23 +34,26 @@ export default function DashboardPage() {
   }, [user, userRole, refreshUserData, isRefreshing]);
 
   // Handle redirect to onboarding if user has no restaurants
-  // useEffect(() => {
-  //   const hasRestaurants = restaurantData?.hasRestaurants;
+  useEffect(() => {
+    // Only proceed if we've finished loading both user and restaurant data
+    if (isInitializing || isLoadingRestaurants || isRedirecting) {
+      return;
+    }
     
-  //   console.log('Redirect check - hasRestaurants:', hasRestaurants, 'isRedirecting:', isRedirecting, 'redirectAttempts:', redirectAttempts);
+    console.log('Redirect check - restaurants:', restaurants.length, 'isRedirecting:', isRedirecting, 'redirectAttempts:', redirectAttempts);
     
-  //   // Only redirect if we haven't already tried too many times (prevent infinite loops)
-  //   if (userRole === 'USER' && hasRestaurants === false && !isRedirecting && redirectAttempts < 2) {
-  //     console.log('Redirecting to onboarding page...');
-  //     setIsRedirecting(true);
-  //     setRedirectAttempts(prev => prev + 1);
-  //     router.push('/onboarding');
-  //   } else if (redirectAttempts >= 2) {
-  //     console.log('Too many redirect attempts, showing dashboard anyway');
-  //   }
-  // }, [userRole, restaurantData, router, isRedirecting, redirectAttempts]);
+    // Only redirect if we haven't already tried too many times (prevent infinite loops)
+    if (userRole === 'USER' && restaurants.length === 0 && !isRedirecting && redirectAttempts < 2) {
+      console.log('No restaurants found, redirecting to onboarding page...');
+      setIsRedirecting(true);
+      setRedirectAttempts(prev => prev + 1);
+      router.push('/onboarding');
+    } else if (redirectAttempts >= 2) {
+      console.log('Too many redirect attempts, showing dashboard anyway');
+    }
+  }, [userRole, restaurants, router, isRedirecting, redirectAttempts, isInitializing, isLoadingRestaurants]);
 
-  if (isInitializing || isRefreshing) {
+  if (isInitializing || isRefreshing || isLoadingRestaurants) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <div className="text-center">
@@ -62,9 +69,9 @@ export default function DashboardPage() {
   }
 
   // Show a message while redirecting
-  // if (isRedirecting) {
-  //   return <div className="p-8">Redirecting to onboarding...</div>;
-  // }
+  if (isRedirecting) {
+    return <div className="p-8">Redirecting to onboarding...</div>;
+  }
 
   return (
     <div className="p-8">

@@ -36,7 +36,7 @@ export default function RestaurantOnboarding({ className }: RestaurantOnboarding
   const [isLoading, setIsLoading] = useState(true);
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const router = useRouter();
-  const { refetchRestaurants, setCurrentRestaurant } = useRestaurant();
+  const { refetchRestaurants, setCurrentRestaurant, currentRestaurant } = useRestaurant();
 
   // Fetch user's restaurants on component mount
   useEffect(() => {
@@ -179,7 +179,29 @@ export default function RestaurantOnboarding({ className }: RestaurantOnboarding
   };
 
   const handleGoToDashboard = () => {
-    router.push('/dashboard');
+    // Add loading state
+    setIsLoading(true);
+    
+    // First refetch restaurants to ensure data is up to date
+    refetchRestaurants()
+      .then(() => {
+        // Set a small delay to ensure React Query has time to update
+        setTimeout(() => {
+          // Force current restaurant ID to localStorage before redirecting
+          if (currentRestaurant) {
+            localStorage.setItem('currentRestaurantId', currentRestaurant.id);
+            console.log('Saved currentRestaurantId to localStorage:', currentRestaurant.id);
+          }
+          
+          // Navigate to dashboard
+          console.log('Navigating to dashboard...');
+          router.push('/dashboard');
+        }, 500);
+      })
+      .catch((error) => {
+        console.error('Error refetching restaurants before dashboard navigation:', error);
+        setIsLoading(false);
+      });
   };
 
   // Get updated onboarding items with completion status
