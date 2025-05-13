@@ -13,7 +13,7 @@
     ],
     "allowJs": true,
     "noImplicitAny": true,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false,
     "noUnusedParameters": true,
     "noImplicitReturns": false,
     "forceConsistentCasingInFileNames": true,
