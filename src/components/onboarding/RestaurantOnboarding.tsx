@@ -129,11 +129,23 @@ export default function RestaurantOnboarding({ className }: RestaurantOnboarding
         email: formData.email,
       });
       
-      // Refetch restaurants to update the list
-      await refetchRestaurants();
+      console.log('Restaurant created successfully:', newRestaurant.id);
       
       // Set the newly created restaurant as the current restaurant
       setCurrentRestaurant(newRestaurant);
+      
+      // Store a flag to indicate we successfully created a restaurant
+      // This is a backup in case the React Query cache doesn't update fast enough
+      localStorage.setItem('hasCreatedRestaurant', 'true');
+      localStorage.setItem('currentRestaurantId', newRestaurant.id);
+      
+      // Refetch restaurants to update the list
+      try {
+        await refetchRestaurants();
+        console.log('Restaurants refetched after creation');
+      } catch (refetchError) {
+        console.error('Error refetching restaurants:', refetchError);
+      }
       
       // Show success message
       addToast({
@@ -179,7 +191,23 @@ export default function RestaurantOnboarding({ className }: RestaurantOnboarding
   };
 
   const handleGoToDashboard = () => {
-    router.push('/dashboard');
+    // Set a flag to ensure we can navigate to dashboard successfully
+    if (completedSteps.includes("setup-restaurant")) {
+      // Make sure we have the hasCreatedRestaurant flag set
+      localStorage.setItem('hasCreatedRestaurant', 'true');
+      
+      // Navigate to dashboard
+      console.log('Navigating to dashboard');
+      router.push('/dashboard');
+    } else {
+      // Show a message if they try to go to dashboard without completing setup
+      addToast({
+        title: "Setup Required",
+        description: "Please complete restaurant setup first.",
+        color: "warning",
+        timeout: 3000,
+      });
+    }
   };
 
   // Get updated onboarding items with completion status

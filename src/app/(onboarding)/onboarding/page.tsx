@@ -3,6 +3,7 @@
 import { restaurantApi } from '@/api/restaurant';
 import RestaurantOnboarding from '@/components/onboarding/RestaurantOnboarding';
 import { useAuth } from '@/components/providers/AuthProvider';
+import { useRestaurant } from '@/components/providers/RestaurantProvider';
 import UserSettingsDropdown from '@/components/user/UserSettingsDropdown';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -10,12 +11,12 @@ import { useEffect, useState } from 'react';
 
 export default function OnboardingPage() {
   const { user, userRole, isInitializing, refreshUserData } = useAuth();
+  const { hasRestaurants, isLoading: isLoadingRestaurants } = useRestaurant();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [shouldRedirectToLogin, setShouldRedirectToLogin] = useState(false);
   const [shouldRedirectToAdmin, setShouldRedirectToAdmin] = useState(false);
   const [shouldRedirectToDashboard, setShouldRedirectToDashboard] = useState(false);
-  const [isCheckingRestaurants, setIsCheckingRestaurants] = useState(false);
   const [redirectAttempts, setRedirectAttempts] = useState(0);
   const [networkError, setNetworkError] = useState<string | null>(null);
 
@@ -55,116 +56,24 @@ export default function OnboardingPage() {
       return;
     }
 
-    // Check if user has restaurants
-    const checkUserRestaurants = async (retryCount = 0) => {
-      if (user && userRole === 'USER' && !isCheckingRestaurants) {
-        setIsCheckingRestaurants(true);
-
-        // If this is the first attempt, refresh user data first
-        if (retryCount === 0) {
-          try {
-            console.log('Refreshing user data before checking restaurants...');
-            await refreshUserData();
-            console.log('User data refreshed successfully');
-          } catch (error) {
-            console.error('Error refreshing user data:', error);
-          }
-        }
-
-        try {
-          console.log('Fetching restaurants directly using restaurantApi...');
-          // Add a small delay to ensure token is properly set
-          await new Promise((resolve) => setTimeout(resolve, 500));
-
-          const restaurants = await restaurantApi.getMyRestaurants();
-          console.log('Restaurants fetched successfully:', restaurants.length);
-
-          const hasAnyRestaurants = restaurants.length > 0;
-          console.log('User has restaurants:', hasAnyRestaurants, 'Count:', restaurants.length);
-
-          setNetworkError(null); // Clear any previous network errors
-
-          // If user has restaurants, always redirect to dashboard
-          if (hasAnyRestaurants) {
-            console.log('User has restaurants, redirecting to dashboard...');
-            setShouldRedirectToDashboard(true);
-          } else {
-            setIsLoading(false);
-          }
-        } catch (error: unknown) {
-          console.error('Error fetching restaurants:', error);
-
-          // Define type guard for axios error
-          const isAxiosError = (
-            err: unknown
-          ): err is {
-            response?: {
-              status: number;
-              data: unknown;
-              headers: unknown;
-            };
-            request?: unknown;
-            message: string;
-          } => {
-            return (
-              typeof err === 'object' &&
-              err !== null &&
-              ('response' in err || 'request' in err) &&
-              'message' in err
-            );
-          };
-
-          // Check specifically for network errors
-          if (error instanceof Error && error.message === 'Network Error') {
-            console.error('Network error detected - unable to connect to the API server');
-            setNetworkError(
-              'Unable to connect to the server. Please check your internet connection and try again.'
-            );
-          }
-
-          // Log more detailed error information
-          if (isAxiosError(error) && error.response) {
-            console.error('Error response status:', error.response.status);
-            console.error('Error response data:', error.response.data);
-            console.error('Error response headers:', error.response.headers);
-          } else if (isAxiosError(error) && error.request) {
-            console.error('No response received:', error.request);
-          } else if (error instanceof Error && error.message.includes('Unexpected token')) {
-            console.error('JSON parsing error - likely received HTML instead of JSON');
-            console.error(
-              'This usually happens when the API returns an error page instead of JSON'
-            );
-          }
-
-          // If we got an error but we have a valid user, retry after a delay
-          if (retryCount < 3) {
-            console.log(
-              `Error fetching restaurants, retrying (${retryCount + 1}/3) in 1.5 seconds...`
-            );
-            setTimeout(() => {
-              setIsCheckingRestaurants(false);
-              checkUserRestaurants(retryCount + 1);
-            }, 1500);
-            return;
-          }
-
-          // After all retries, default to showing the onboarding page
-          console.log('All retries failed, showing onboarding page');
-          setIsLoading(false);
-        } finally {
-          setIsCheckingRestaurants(false);
-        }
-      }
-    };
-
-    if (!isInitializing && user) {
-      checkUserRestaurants();
+    // If we've finished loading and user has restaurants, redirect to dashboard
+    if (!isInitializing && !isLoadingRestaurants && hasRestaurants) {
+      console.log('User has restaurants, redirecting to dashboard...');
+      setShouldRedirectToDashboard(true);
+      return;
     }
-  }, [user, userRole, isInitializing, refreshUserData, isCheckingRestaurants]);
 
+    // If we've finished loading and user doesn't have restaurants, show onboarding
+    if (!isInitializing && !isLoadingRestaurants) {
+      setIsLoading(false);
+    }
+  }, [user, userRole, isInitializing, hasRestaurants, isLoadingRestaurants]);
+
+  // If we're in a loading state, show loading spinner
   if (
     isInitializing ||
     isLoading ||
+    isLoadingRestaurants ||
     shouldRedirectToLogin ||
     shouldRedirectToAdmin ||
     shouldRedirectToDashboard

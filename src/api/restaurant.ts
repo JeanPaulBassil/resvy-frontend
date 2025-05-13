@@ -78,9 +78,13 @@ export const restaurantApi = {
     try {
       // First check if the user is logged in to prevent unnecessary requests
       const isLoggedIn = localStorage.getItem('loggedIn') === 'true';
-      const isAuthPage = typeof window !== 'undefined' && 
-        (window.location.pathname.includes('/login') || 
-         window.location.pathname.includes('/signup'));
+      
+      // Only consider login and signup as auth pages - specifically exclude onboarding
+      const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+      const isAuthPage = currentPath === '/login' || currentPath === '/signup';
+      
+      // Log for debugging purposes
+      console.log('Current path:', currentPath, 'isAuthPage:', isAuthPage, 'isLoggedIn:', isLoggedIn);
       
       // Don't make the request if we're not logged in or we're on an auth page
       if (!isLoggedIn || isAuthPage) {
