@@ -1,7 +1,8 @@
-import { Restaurant } from '@/api/restaurant';
+import { CreateRestaurantDto, Restaurant, restaurantApi } from '@/api/restaurant';
 import { useRestaurantData } from '@/hooks/useRestaurantData';
 import React, { createContext, ReactNode, useContext, useEffect, useState, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
+import { useMutation } from '@tanstack/react-query';
 
 interface RestaurantContextType {
   restaurants: Restaurant[];
@@ -10,6 +11,7 @@ interface RestaurantContextType {
   isLoading: boolean;
   error: string | null;
   refetchRestaurants: () => Promise<void>;
+  addRestaurant: (data: CreateRestaurantDto) => Promise<Restaurant>;
 }
 
 const RestaurantContext = createContext<RestaurantContextType | undefined>(undefined);
@@ -35,6 +37,24 @@ export const RestaurantProvider = ({ children }: { children: ReactNode }) => {
 
   // Get the restaurants array from the data
   const restaurants = useMemo(() => data?.restaurants || [], [data?.restaurants]);
+
+  // Create restaurant mutation
+  const createRestaurantMutation = useMutation({
+    mutationFn: (data: CreateRestaurantDto) => restaurantApi.createRestaurant(data)
+  });
+
+  // Add restaurant function
+  const addRestaurant = async (data: CreateRestaurantDto): Promise<Restaurant> => {
+    const newRestaurant = await createRestaurantMutation.mutateAsync(data);
+    await refetch();
+    
+    // If this is the first restaurant, set it as current
+    if (restaurants.length === 0) {
+      handleSetCurrentRestaurant(newRestaurant);
+    }
+    
+    return newRestaurant;
+  };
 
   // Only update current restaurant if we should fetch data
   useEffect(() => {
@@ -77,6 +97,7 @@ export const RestaurantProvider = ({ children }: { children: ReactNode }) => {
     isLoading,
     error: error ? String(error) : null,
     refetchRestaurants,
+    addRestaurant,
   };
 
   return <RestaurantContext.Provider value={value}>{children}</RestaurantContext.Provider>;

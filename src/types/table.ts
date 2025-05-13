@@ -19,6 +19,8 @@ export interface Table {
   updatedAt: string;
   isHidden?: boolean;
   isMerged?: boolean;
+  originalX?: number;
+  originalY?: number;
 }
 
 export interface CreateTableDto {
@@ -54,6 +56,24 @@ export interface MergeTablesDto {
   tableIds: string[];
 }
 
+// Animation states for table merging
+export enum TableAnimationState {
+  IDLE = "IDLE",
+  MERGING = "MERGING",
+  UNMERGING = "UNMERGING",
+}
+
+// Interface for tracking table merge animations
+export interface TableMergeAnimation {
+  sourceTableId: string;
+  targetTableId: string;
+  progress: number;
+  state: TableAnimationState;
+  initialPositions?: {
+    [tableId: string]: { x: number, y: number }
+  };
+}
+
 // Utility function to get table color based on status
 export const getTableColor = (status: TableStatus): string => {
   switch (status) {
@@ -62,7 +82,7 @@ export const getTableColor = (status: TableStatus): string => {
     case TableStatus.OCCUPIED:
       return "#ef4444"; // red
     case TableStatus.RESERVED:
-      return "#3b82f6"; // blue
+      return "#75CAA6"; // green for reserved status
     default:
       return "#f5f5f4"; // default gray
   }

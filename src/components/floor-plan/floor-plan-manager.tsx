@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from "react"
 import { Plus, Settings, Trash2, Maximize2, Layers } from "lucide-react"
-import { TableStatus, type Table, UpdateTableDto } from "@/types/table"
+import { TableStatus, type Table, UpdateTableDto, TableAnimationState, type TableMergeAnimation } from "@/types/table"
 import type { Floor } from "@/types/floor"
 import { Button, Tab, Tabs, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/react"
 import FloorPlan from "./floor-plan"
@@ -13,6 +13,7 @@ import { useFloors, useCreateFloor, useUpdateFloor, useDeleteFloor } from '@/hoo
 import { useTables, useUpdateTable, useDeleteTable, useUpdateTablePosition, useUpdateTableStatus, useMergeTables, useUnmergeTables, tableKeys } from '@/hooks/useTable'
 import AddTableModal from "./add-table-modal"
 import { useQueryClient } from "@tanstack/react-query"
+import MergeTablesModal from "./merge-tables-modal"
 
 export interface FloorPlanManagerProps {
   restaurantId: string;
@@ -27,6 +28,14 @@ export default function FloorPlanManager({ restaurantId }: FloorPlanManagerProps
   const [tableToDelete, setTableToDelete] = useState<string | undefined>(undefined)
   const [isTutorialOpen, setIsTutorialOpen] = useState(false)
   const [isAddTableModalOpen, setIsAddTableModalOpen] = useState(false)
+  const [showMergeModal, setShowMergeModal] = useState(false)
+  const [adjacentTables, setAdjacentTables] = useState<Table[]>([])
+  const [originalPositions, setOriginalPositions] = useState<{[key: string]: {x: number, y: number}}>({})
+  const [animatingMerge, setAnimatingMerge] = useState(false)
+  const [completedMerges, setCompletedMerges] = useState<string[]>([])
+  const [mergeAnimations, setMergeAnimations] = useState<TableMergeAnimation[]>([])
+  const [mergeCandidates, setMergeCandidates] = useState<string[]>([])
+  const [draggingTableId, setDraggingTableId] = useState<string | null>(null)
 
   // Use React Query hooks for floors
   const { data: floors = [], isLoading: isLoadingFloors } = useFloors(restaurantId)
@@ -126,6 +135,17 @@ export default function FloorPlanManager({ restaurantId }: FloorPlanManagerProps
   }
 
   const updateTablePosition = useCallback((id: string, x: number, y: number) => {
+    // Skip position updates if this table is part of merge candidates
+    // This prevents position updates when tables are close to each other
+    if (mergeCandidates && mergeCandidates.includes(id)) {
+      // Only update local UI position, but don't send to backend
+      setLocalTablePositions(prev => ({
+        ...prev,
+        [id]: { x, y }
+      }));
+      return;
+    }
+    
     // Immediately update the position in the UI (optimistic update)
     setLocalTablePositions(prev => ({
       ...prev,
@@ -171,7 +191,7 @@ export default function FloorPlanManager({ restaurantId }: FloorPlanManagerProps
         });
       }
     }, 500); // 500ms debounce time
-  }, [updateTablePositionMutation, restaurantId, activeFloorId, queryClient]);
+  }, [updateTablePositionMutation, restaurantId, activeFloorId, queryClient, mergeCandidates]);
   
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -252,8 +272,23 @@ export default function FloorPlanManager({ restaurantId }: FloorPlanManagerProps
     const mergedTable = tables.find((table) => table.id === selectedTableIds[0])
     if (!mergedTable?.isMerged || !mergedTable.mergedTableIds) return
 
-    // Call the unmerge API
-    unmergeTablesMutation.mutate(selectedTableIds[0])
+    // Store the merged table ID to detect unmerging in the useEffect
+    const mergedTableId = mergedTable.id;
+    
+    // Call the unmerge API - our useEffect will handle the animation when it detects
+    // that this table has been unmerged
+    unmergeTablesMutation.mutate(selectedTableIds[0], {
+      onSuccess: () => {
+        // Find all the component tables
+        const componentTables = tables.filter(t => 
+          mergedTable.mergedTableIds.includes(t.id) && t.parentTableId === mergedTableId
+        );
+        
+        // We don't need to explicitly restore positions here
+        // The backend should preserve the original positions of component tables
+        // and our animation handler in useEffect will handle the visual transition
+      }
+    })
     
     // Clear selection
     setSelectedTableIds([])
@@ -342,6 +377,166 @@ export default function FloorPlanManager({ restaurantId }: FloorPlanManagerProps
 
   const showTutorial = () => {
     setIsTutorialOpen(true);
+  }
+
+  const handleTableDragEnd = (tableId: string, _x: number, _y: number) => {
+    // Skip drag end processing during animations
+    if (animatingMerge) return;
+    
+    // Find the table that was dragged
+    const draggedTable = tables.find((t) => t.id === tableId)
+    if (!draggedTable) return
+
+    // Get all adjacent tables
+    const adjacentTableIds = findAdjacentTables(tableId)
+    
+    if (adjacentTableIds.length > 0) {
+      // Get the full table objects for the modal
+      const adjacentTablesList = tables.filter(t => adjacentTableIds.includes(t.id))
+      
+      // Store the draggedTable as the second item since we want target tables as primary
+      // This reverses the merge animation direction
+      setAdjacentTables([...adjacentTablesList, draggedTable])
+      setShowMergeModal(true)
+      
+      // Keep the original position in our state for later use
+      // No need to do anything with the current position until merge is confirmed or cancelled
+    } else {
+      // No adjacent tables, so we can proceed with normal position update
+      
+      // Get the current position from local state
+      const currentPosition = localTablePositions[tableId];
+      if (currentPosition) {
+        // Send the update to backend as there's no merge happening
+        lastTablePositionRef.current = { id: tableId, x: currentPosition.x, y: currentPosition.y };
+        
+        updateTablePositionMutation.mutate({ 
+          x: currentPosition.x, 
+          y: currentPosition.y 
+        });
+      }
+      
+      // Clean up original positions since we're not merging
+      setOriginalPositions(prev => {
+        const newPositions = {...prev};
+        delete newPositions[tableId];
+        return newPositions;
+      });
+    }
+    
+    // Reset dragging state
+    setDraggingTableId(null)
+    setMergeCandidates([])
+  }
+
+  const handleConfirmMerge = () => {
+    if (adjacentTables.length >= 2) {
+      // Setup merge animations before actually merging tables
+      // The target table (where we want things to merge into) is the first table
+      const mainTable = adjacentTables[0]; 
+      // The source tables (including the dragged table) are the rest
+      const tablesToMerge = adjacentTables.slice(1);
+      
+      // Use the saved original positions instead of current positions
+      const initialPositions: {[key: string]: {x: number, y: number}} = {};
+      tablesToMerge.forEach(table => {
+        // If we have a saved original position for this table, use it
+        // Otherwise fall back to current position
+        initialPositions[table.id] = originalPositions[table.id] || { x: table.x, y: table.y };
+      });
+      
+      // Create animation entries for each table being merged
+      const animations = tablesToMerge.map(table => ({
+        sourceTableId: table.id,
+        targetTableId: mainTable.id,
+        progress: 0,
+        state: TableAnimationState.MERGING,
+        initialPositions
+      }));
+      
+      setMergeAnimations(animations);
+      setAnimatingMerge(true);
+      
+      // Use setTimeout to allow animations to complete before actually merging
+      setTimeout(() => {
+        // Get all table IDs for merging
+        const tableIds = adjacentTables.map((table) => table.id)
+        
+        // Call the merge API
+        mergeTables(tableIds)
+        
+        // Add to completed merges list for future unmerge animations
+        setCompletedMerges(prev => [...prev, mainTable.id])
+        
+        // Close the modal and reset state
+        setShowMergeModal(false)
+        setAdjacentTables([])
+        setAnimatingMerge(false)
+        setMergeAnimations([]);
+        
+        // Clear original positions since merge is complete
+        // We'll keep track of these positions elsewhere for unmerging
+        setOriginalPositions({});
+      }, 650);
+    }
+  }
+
+  // Function to handle canceling merge
+  const handleCancelMerge = () => {
+    // Close the modal
+    setShowMergeModal(false);
+    setAdjacentTables([]);
+    
+    // Restore original positions for all tables that were going to be merged
+    adjacentTables.forEach(table => {
+      const originalPos = originalPositions[table.id];
+      if (originalPos) {
+        // Update the position in the backend to the original position
+        updateTablePositionMutation.mutate({ 
+          x: originalPos.x, 
+          y: originalPos.y 
+        }, {
+          onSuccess: () => {
+            // Update the table in the local cache
+            queryClient.setQueryData(
+              tableKeys.list(restaurantId, activeFloorId),
+              (old: Table[] | undefined) => {
+                if (!old) return old;
+                return old.map(t => 
+                  t.id === table.id ? { ...t, x: originalPos.x, y: originalPos.y } : t
+                );
+              }
+            );
+          }
+        });
+      }
+    });
+    
+    // Clear original positions since we've handled them
+    setOriginalPositions({});
+  }
+
+  // Add this helper function for finding adjacent tables
+  const findAdjacentTables = (tableId: string): string[] => {
+    const draggedTable = tables.find(t => t.id === tableId)
+    if (!draggedTable) return []
+    
+    // Find tables that are close to the dragged table
+    // Define adjacency based on a pixel threshold (e.g., 40 pixels)
+    const threshold = 40
+    
+    return tables
+      .filter(table => {
+        if (table.id === tableId || table.isHidden) return false
+        
+        // Calculate distance between table centers
+        const dx = Math.abs((table.x + 40) - (draggedTable.x + 40))
+        const dy = Math.abs((table.y + 40) - (draggedTable.y + 40))
+        
+        // Tables are adjacent if they are within the threshold distance
+        return dx <= threshold && dy <= threshold
+      })
+      .map(table => table.id)
   }
 
   return (
@@ -1033,6 +1228,14 @@ export default function FloorPlanManager({ restaurantId }: FloorPlanManagerProps
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      {/* Merge Tables Modal */}
+      <MergeTablesModal
+        isOpen={showMergeModal}
+        onClose={handleCancelMerge}
+        onConfirm={handleConfirmMerge}
+        tables={adjacentTables}
+      />
     </div>
   )
 }

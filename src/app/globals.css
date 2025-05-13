@@ -3,13 +3,13 @@
 @tailwind utilities;
 
 :root {
-  --primary: 59 130 246; /* Blue (#3B82F6) */
+  --primary: 117 202 166; /* Green (#75CAA6) */
   --primary-foreground: 255 255 255;
 }
 
 /* Override HeroUI primary color */
 .heroui-primary {
-  --primary: 59 130 246 !important; /* Blue (#3B82F6) */
+  --primary: 117 202 166 !important; /* Green (#75CAA6) */
 }
 
 /* Override inline color styles */
@@ -21,59 +21,59 @@
   --tw-border-opacity: 1;
 }
 
-/* Replace specific green color with blue */
+/* Restore green color */
 .bg-\[\#75CAA6\] {
-  background-color: #3B82F6 !important;
+  background-color: #75CAA6 !important;
 }
 
 .text-\[\#75CAA6\] {
-  color: #3B82F6 !important;
+  color: #75CAA6 !important;
 }
 
 .border-\[\#75CAA6\] {
-  border-color: #3B82F6 !important;
+  border-color: #75CAA6 !important;
 }
 
 .hover\:bg-\[\#75CAA6\]\/90:hover {
-  background-color: rgba(59, 130, 246, 0.9) !important;
+  background-color: rgba(117, 202, 166, 0.9) !important;
 }
 
 .hover\:border-\[\#75CAA6\]\/30:hover {
-  border-color: rgba(59, 130, 246, 0.3) !important;
+  border-color: rgba(117, 202, 166, 0.3) !important;
 }
 
 .bg-\[\#75CAA6\]\/10 {
-  background-color: rgba(59, 130, 246, 0.1) !important;
+  background-color: rgba(117, 202, 166, 0.1) !important;
 }
 
 .bg-\[\#75CAA6\]\/20 {
-  background-color: rgba(59, 130, 246, 0.2) !important;
+  background-color: rgba(117, 202, 166, 0.2) !important;
 }
 
 .bg-\[\#75CAA6\]\/5 {
-  background-color: rgba(59, 130, 246, 0.05) !important;
+  background-color: rgba(117, 202, 166, 0.05) !important;
 }
 
 .border-\[\#75CAA6\]\/10 {
-  border-color: rgba(59, 130, 246, 0.1) !important;
+  border-color: rgba(117, 202, 166, 0.1) !important;
 }
 
 .border-\[\#75CAA6\]\/20 {
-  border-color: rgba(59, 130, 246, 0.2) !important;
+  border-color: rgba(117, 202, 166, 0.2) !important;
 }
 
 .border-\[\#75CAA6\]\/30 {
-  border-color: rgba(59, 130, 246, 0.3) !important;
+  border-color: rgba(117, 202, 166, 0.3) !important;
 }
 
 .border-\[\#75CAA6\]\/60 {
-  border-color: rgba(59, 130, 246, 0.6) !important;
+  border-color: rgba(117, 202, 166, 0.6) !important;
 }
 
 .group-hover\:bg-\[\#75CAA6\]\/20:hover {
-  background-color: rgba(59, 130, 246, 0.2) !important;
+  background-color: rgba(117, 202, 166, 0.2) !important;
 }
 
 .group:hover .group-hover\:text-\[\#75CAA6\] {
-  color: #3B82F6 !important;
+  color: #75CAA6 !important;
 }

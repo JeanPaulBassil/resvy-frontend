@@ -115,7 +115,7 @@ export default function AddTableModal({
     const statusColors = {
       [TableStatus.AVAILABLE]: '#10b981', // green
       [TableStatus.OCCUPIED]: '#ef4444', // red
-      [TableStatus.RESERVED]: '#3b82f6', // blue
+      [TableStatus.RESERVED]: '#75CAA6', // blue
     }
     
     setValue('color', statusColors[status])

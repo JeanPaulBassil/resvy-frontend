@@ -117,12 +117,6 @@ export const userItems: SidebarItem[] = [
         icon: 'solar:clock-circle-linear',
         title: 'Shifts',
       },
-      {
-        key: 'restaurant-settings',
-        href: '/restaurant-settings',
-        icon: 'solar:chef-hat-bold',
-        title: 'Restaurant Settings',
-      },
     ],
   },
 ];
