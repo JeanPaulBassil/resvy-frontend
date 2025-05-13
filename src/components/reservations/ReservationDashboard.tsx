@@ -191,6 +191,12 @@ export default function ReservationDashboard() {
     cancelled: reservations?.filter((r) => r.status === ReservationStatus.CANCELLED).length || 0,
   };
 
+  // Function to reset date to today
+  const handleBackToToday = () => {
+    const todayDate = today(getLocalTimeZone());
+    setDateFilter(todayDate);
+  };
+
   if (!restaurantId) {
     return (
       <div className="text-center py-10">
@@ -448,10 +454,28 @@ export default function ReservationDashboard() {
 
           {/* Date info banner */}
           <div className="px-6 py-3 bg-gray-50 dark:bg-gray-800/30 border-y border-gray-200 dark:border-gray-700 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <CalendarIcon className="h-4 w-4 text-gray-400" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{formattedDate}</span>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <CalendarIcon className="h-4 w-4 text-gray-400" />
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{formattedDate}</span>
+              </div>
+              
+              {/* Back to Today button */}
+              {dateFilter && format(new Date(dateFilter.toString()), 'yyyy-MM-dd') !== format(new Date(), 'yyyy-MM-dd') && (
+                <Button
+                  size="sm"
+                  radius="full"
+                  variant="flat"
+                  color="primary"
+                  className="h-8 px-3 text-xs font-medium border border-primary-200 bg-primary-50/50 hover:bg-primary-100/50 dark:border-primary-800 dark:bg-primary-900/20 dark:hover:bg-primary-800/30"
+                  startContent={<CalendarIcon className="h-3.5 w-3.5" />}
+                  onPress={handleBackToToday}
+                >
+                  Back to Today
+                </Button>
+              )}
             </div>
+            
             <div className="flex items-center gap-3">
               {searchQuery && (
                 <span className="text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 py-1 px-2 rounded-full flex items-center gap-1">

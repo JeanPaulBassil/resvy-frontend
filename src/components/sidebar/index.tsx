@@ -14,8 +14,8 @@ import Sidebar, { SidebarItem } from './Sidebar';
 // Admin-only sidebar items
 export const adminItems: SidebarItem[] = [
   {
-    key: 'overview',
-    title: 'Overview',
+    key: 'admin',
+    title: '',
     items: [
       {
         key: 'clients',
@@ -84,14 +84,20 @@ export const adminItems: SidebarItem[] = [
 // Regular user sidebar items
 export const userItems: SidebarItem[] = [
   {
-    key: 'overview',
-    title: 'Overview',
+    key: 'main',
+    title: '',
     items: [
       {
         key: 'dashboard',
         href: '/dashboard',
         icon: 'solar:home-2-linear',
         title: 'Dashboard',
+      },
+      {
+        key: 'reservations',
+        href: '/reservations',
+        icon: 'solar:calendar-mark-linear',
+        title: 'Reservations',
       },
       {
         key: 'floor-plan',
@@ -104,12 +110,6 @@ export const userItems: SidebarItem[] = [
         href: '/guests',
         icon: 'solar:user-rounded-linear',
         title: 'Guests',
-      },
-      {
-        key: 'reservations',
-        href: '/reservations',
-        icon: 'solar:calendar-mark-linear',
-        title: 'Reservations',
       },
       {
         key: 'shifts',
@@ -142,7 +142,7 @@ export default function AppWrapper() {
   const currentPath = pathname?.split('/')?.[1] || '';
 
   // Map path to sidebar key
-  const getSelectedKey = () => {
+  const getSelectedKey = (): string => {
     // For admin paths
     if (currentPath === 'admin') {
       const secondSegment = pathname?.split('/')?.[2];
@@ -198,46 +198,58 @@ export default function AppWrapper() {
   const activeKey = getSelectedKey();
 
   return (
-    <div className="h-full min-h-[48rem] relative">
+    <div className="h-full relative flex-shrink-0">
       {/* Sidebar container with dynamic width */}
       <div
-        className={`relative flex h-full flex-1 flex-col bg-[#75CAA6] transition-all duration-300 ease-in-out ${
+        className={`relative flex h-full flex-col bg-[#75CAA6] transition-all duration-300 ease-in-out ${
           isSidebarOpen ? 'w-72 p-6' : 'w-0 p-0 overflow-hidden'
         }`}
       >
-        {/* Header with logo */}
-        <div className="flex items-center gap-2 px-2 mb-2">
-          <Image src="/logo.svg" alt="logo" width={isSidebarOpen ? 200 : 0} height={100} />
+        {/* Header with logo - fixed at top */}
+        <div className="flex items-center gap-2 px-2 mb-2 flex-shrink-0">
+          <div className="relative">
+            <Image src="/logo.svg" alt="logo" width={isSidebarOpen ? 200 : 0} height={100} />
+            {isSidebarOpen && (
+              <div className="absolute bottom-0 right-0 text-white/80 text-[10px] italic font-light transform translate-x-8 translate-y-1">
+                by rooster
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Restaurant Switcher */}
-        {isSidebarOpen && userRole === 'USER' && <RestaurantSwitcher />}
-
-        {/* Sidebar content */}
-        {isSidebarOpen && (
-          <ScrollShadow className="-mr-6 h-full max-h-full py-6 pr-6">
-            <Sidebar
-              defaultSelectedKey={activeKey}
-              selectedKeys={[activeKey]}
-              iconClassName="text-primary-foreground/60 group-data-[selected=true]:text-primary-foreground"
-              itemClasses={{
-                title:
-                  'text-primary-foreground/60 group-data-[selected=true]:text-primary-foreground',
-              }}
-              items={sidebarItems}
-              sectionClasses={{
-                heading: 'text-primary-foreground/80',
-              }}
-              variant="flat"
-            />
-          </ScrollShadow>
+        {/* Restaurant Switcher - fixed below header */}
+        {isSidebarOpen && userRole === 'USER' && (
+          <div className="flex-shrink-0">
+            <RestaurantSwitcher />
+          </div>
         )}
 
-        <Spacer y={8} />
-
-        {/* Footer with user settings */}
+        {/* Sidebar content - scrollable section */}
         {isSidebarOpen && (
-          <div className="mt-auto flex flex-col">
+          <div className="flex-grow overflow-hidden flex flex-col min-h-0">
+            <ScrollShadow className="-mr-6 h-full py-6 pr-6 overflow-y-auto">
+              <Sidebar
+                defaultSelectedKey={activeKey}
+                selectedKeys={[activeKey]}
+                iconClassName="text-primary-foreground/60 group-data-[selected=true]:text-primary-foreground"
+                itemClasses={{
+                  title:
+                    'text-primary-foreground/60 group-data-[selected=true]:text-primary-foreground',
+                }}
+                items={sidebarItems}
+                sectionClasses={{
+                  heading: 'text-primary-foreground/80',
+                }}
+                variant="flat"
+              />
+              <Spacer y={8} />
+            </ScrollShadow>
+          </div>
+        )}
+
+        {/* Footer with user settings - fixed at bottom */}
+        {isSidebarOpen && (
+          <div className="mt-auto flex flex-col flex-shrink-0">
             <div className="flex items-center gap-3 px-2">
               <div className="flex flex-col"></div>
             </div>

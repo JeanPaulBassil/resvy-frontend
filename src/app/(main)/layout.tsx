@@ -11,11 +11,11 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen">
+      <div className="flex h-screen overflow-hidden">
         <AppWrapper />
         <main className="flex-1 overflow-y-auto transition-all duration-300 ease-in-out">
           {isLoading ? (
-            <div className="p-4 md:p-6 max-w-[1600px] mx-auto h-[calc(100vh-80px)]">
+            <div className="p-4 md:p-6 max-w-[1600px] mx-auto h-full">
               <div className="bg-white rounded-xl shadow-sm h-full p-6">
                 <div className="flex flex-col h-full">
                   {/* Header skeleton with logo */}
@@ -77,7 +77,9 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               </div>
             </div>
           ) : (
-            children
+            <div className="h-full overflow-auto">
+              {children}
+            </div>
           )}
         </main>
       </div>
