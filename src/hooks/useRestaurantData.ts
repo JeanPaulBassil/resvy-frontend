@@ -4,21 +4,49 @@ import { useQuery } from '@tanstack/react-query';
 import { restaurantApi } from '@/api/restaurant';
 import { useApiError } from '@/components/providers/ApiErrorProvider';
 import { usePathname } from 'next/navigation';
+import { useState, useEffect } from 'react';
 
 export function useRestaurantData() {
   const { setConnectionError } = useApiError();
   const pathname = usePathname();
+  const [refreshTrigger, setRefreshTrigger] = useState<string | null>(null);
+  
+  // Check for refresh trigger in localStorage
+  useEffect(() => {
+    const checkForRefreshTrigger = () => {
+      const trigger = localStorage.getItem('forceRefreshRestaurants');
+      if (trigger && trigger !== refreshTrigger) {
+        console.log('Force refresh trigger detected in localStorage');
+        setRefreshTrigger(trigger);
+        // Clear the trigger after handling it
+        localStorage.removeItem('forceRefreshRestaurants');
+      }
+    };
+    
+    // Check immediately and then on an interval
+    checkForRefreshTrigger();
+    const intervalId = setInterval(checkForRefreshTrigger, 1000);
+    
+    return () => clearInterval(intervalId);
+  }, [refreshTrigger]);
   
   // Check if we're on an auth page (login or signup ONLY) - use exact path matching
   const isAuthPage = pathname === '/login' || pathname === '/signup';
   
-  // Check if user is logged in
-  const isLoggedIn = typeof window !== 'undefined' && localStorage.getItem('loggedIn') === 'true';
+  // Check if user is logged in more thoroughly - check for token as well
+  const hasLoginFlag = typeof window !== 'undefined' && localStorage.getItem('loggedIn') === 'true';
+  const hasToken = typeof window !== 'undefined' && 
+    !!(sessionStorage.getItem('token') || localStorage.getItem('token'));
+  
+  // Combine checks to get final login state
+  const isLoggedIn = hasLoginFlag || hasToken;
   
   // Log current state for debugging
   if (typeof window !== 'undefined') {
     console.log('useRestaurantData - current path:', pathname);
     console.log('useRestaurantData - isAuthPage:', isAuthPage);
+    console.log('useRestaurantData - hasLoginFlag:', hasLoginFlag);
+    console.log('useRestaurantData - hasToken:', hasToken);
     console.log('useRestaurantData - isLoggedIn:', isLoggedIn);
   }
   
@@ -26,7 +54,7 @@ export function useRestaurantData() {
   const enabled = !isAuthPage && isLoggedIn;
 
   return useQuery({
-    queryKey: ['restaurants'],
+    queryKey: ['restaurants', refreshTrigger],
     queryFn: async () => {
       try {
         console.log('Fetching restaurants data via useRestaurantData hook');

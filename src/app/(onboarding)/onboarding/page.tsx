@@ -21,14 +21,27 @@ export default function OnboardingPage() {
 
   // Handle redirects based on state
   useEffect(() => {
+    // Prevent infinite loops by checking if we've reloaded the page
+    const lastRedirectTime = sessionStorage.getItem('lastRedirectTime');
+    const currentTime = Date.now();
+    
+    // If we've redirected in the last second, don't redirect again
+    if (lastRedirectTime && (currentTime - parseInt(lastRedirectTime)) < 1000) {
+      console.log('Preventing redirection loop - too soon since last redirect');
+      setShouldRedirectToDashboard(false);
+      return;
+    }
+    
     if (shouldRedirectToLogin) {
       router.push('/login');
     } else if (shouldRedirectToAdmin) {
       router.push('/admin');
-    } else if (shouldRedirectToDashboard && redirectAttempts < 2) {
+    } else if (shouldRedirectToDashboard && redirectAttempts < 5) {
       setRedirectAttempts((prev) => prev + 1);
+      // Store the time of this redirect
+      sessionStorage.setItem('lastRedirectTime', currentTime.toString());
       router.push('/dashboard');
-    } else if (redirectAttempts >= 2) {
+    } else if (redirectAttempts >= 5) {
       // If we've tried to redirect too many times, just show the onboarding page
       console.log('Too many redirect attempts, showing onboarding page anyway');
       setShouldRedirectToDashboard(false);

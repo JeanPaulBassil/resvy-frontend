@@ -30,13 +30,20 @@ export const RestaurantProvider = ({ children }: { children: ReactNode }) => {
   // Use exact path matching for auth pages
   const isAuthPage = pathname === '/login' || pathname === '/signup';
   
-  // Check logged in state
-  const isLoggedIn = typeof window !== 'undefined' && localStorage.getItem('loggedIn') === 'true';
+  // Check logged in state more thoroughly - check for token as well
+  const hasLoginFlag = typeof window !== 'undefined' && localStorage.getItem('loggedIn') === 'true';
+  const hasToken = typeof window !== 'undefined' && 
+    !!(sessionStorage.getItem('token') || localStorage.getItem('token'));
+  
+  // Combine checks to get final login state
+  const isLoggedIn = hasLoginFlag || hasToken;
   
   // Log current state for debugging
   if (typeof window !== 'undefined') {
     console.log('RestaurantProvider - current path:', pathname);
     console.log('RestaurantProvider - isAuthPage:', isAuthPage);
+    console.log('RestaurantProvider - hasLoginFlag:', hasLoginFlag);
+    console.log('RestaurantProvider - hasToken:', hasToken);
     console.log('RestaurantProvider - isLoggedIn:', isLoggedIn);
   }
   

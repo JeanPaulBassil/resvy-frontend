@@ -35,6 +35,15 @@ export default function DashboardPage() {
 
   // Handle redirect to onboarding if user has no restaurants
   useEffect(() => {
+    // Prevent checking too soon after a recent navigation
+    const lastRedirectTime = sessionStorage.getItem('lastRedirectTime');
+    const currentTime = Date.now();
+    
+    if (lastRedirectTime && (currentTime - parseInt(lastRedirectTime)) < 1000) {
+      console.log('Dashboard - Skipping redirect check, too soon since last navigation');
+      return;
+    }
+    
     // Only proceed if we've finished loading both user and restaurant data
     if (isInitializing || isLoadingRestaurants || isRedirecting) {
       return;
@@ -52,15 +61,24 @@ export default function DashboardPage() {
     // AND we don't have restaurants in React state OR localStorage
     const noRestaurants = restaurants.length === 0 && !hasRestaurantsInStorage;
     
-    if (userRole === 'USER' && noRestaurants && !isRedirecting && redirectAttempts < 2) {
+    if (userRole === 'USER' && noRestaurants && !isRedirecting && redirectAttempts < 3) {
       console.log('No restaurants found in state or localStorage, redirecting to onboarding page...');
       setIsRedirecting(true);
       setRedirectAttempts(prev => prev + 1);
+      // Record the redirect time
+      sessionStorage.setItem('lastRedirectTime', currentTime.toString());
       router.push('/onboarding');
-    } else if (redirectAttempts >= 2) {
+    } else if (redirectAttempts >= 3) {
       console.log('Too many redirect attempts, showing dashboard anyway');
     } else if (hasRestaurantsInStorage && currentRestaurantId) {
       console.log('Found restaurant data in localStorage, staying on dashboard');
+      
+      // If localStorage has data but state doesn't, force a refresh
+      if (restaurants.length === 0) {
+        console.log('Found data in localStorage but not in state, refreshing restaurant data');
+        // This will trigger a refetch in the useRestaurantData hook
+        localStorage.setItem('forceRefreshRestaurants', Date.now().toString());
+      }
     }
   }, [userRole, restaurants, router, isRedirecting, redirectAttempts, isInitializing, isLoadingRestaurants]);
 

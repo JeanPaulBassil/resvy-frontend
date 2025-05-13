@@ -77,12 +77,12 @@ export const restaurantApi = {
   getMyRestaurants: async (): Promise<Restaurant[]> => {
     try {
       // Check if the user is logged in - multiple ways to verify this
-      const isLoggedIn = typeof window !== 'undefined' && (
-        localStorage.getItem('loggedIn') === 'true' || 
-        // Also check if we have a token, which indicates we're logged in
-        sessionStorage.getItem('token') || 
-        localStorage.getItem('token')
-      );
+      const hasLoginFlag = typeof window !== 'undefined' && localStorage.getItem('loggedIn') === 'true';
+      const hasToken = typeof window !== 'undefined' && 
+        !!(sessionStorage.getItem('token') || localStorage.getItem('token'));
+      
+      // Combine checks to get final login state
+      const isLoggedIn = hasLoginFlag || hasToken;
       
       // Check if we're on an auth page (login or signup ONLY)
       // Note: onboarding is NOT an auth page
@@ -94,9 +94,10 @@ export const restaurantApi = {
       // Log the current path for debugging
       if (typeof window !== 'undefined') {
         console.log('Current path:', window.location.pathname);
+        console.log('hasLoginFlag:', hasLoginFlag);
+        console.log('hasToken:', hasToken);
         console.log('isLoggedIn:', isLoggedIn);
         console.log('isAuthPage:', isAuthPage);
-        console.log('token exists:', !!(sessionStorage.getItem('token') || localStorage.getItem('token')));
       }
       
       // Don't make the request if we're not logged in or we're on an auth page
