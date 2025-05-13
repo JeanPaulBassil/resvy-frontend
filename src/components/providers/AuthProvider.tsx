@@ -104,6 +104,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
+        // Set loggedIn flag in localStorage
+        localStorage.setItem('loggedIn', 'true');
+        
         // Get user data from localStorage (including role)
         const userData = getUserDataFromStorage();
 
@@ -141,6 +144,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
         }
       } else {
+        // Clear loggedIn flag when user is logged out
+        localStorage.removeItem('loggedIn');
+        localStorage.removeItem('hasCreatedRestaurant');
+        localStorage.removeItem('currentRestaurantId');
+        
         setUser(null);
         setUserRole(null);
       }

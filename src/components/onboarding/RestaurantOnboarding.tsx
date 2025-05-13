@@ -117,6 +117,9 @@ export default function RestaurantOnboarding({ className }: RestaurantOnboarding
 
   const handleSave = async () => {
     try {
+      // Ensure we're logged in
+      localStorage.setItem('loggedIn', 'true');
+      
       // Combine country code and phone number
       const fullPhoneNumber = `${formData.countryCode}${formData.phoneNumber}`;
       
@@ -195,6 +198,11 @@ export default function RestaurantOnboarding({ className }: RestaurantOnboarding
     if (completedSteps.includes("setup-restaurant")) {
       // Make sure we have the hasCreatedRestaurant flag set
       localStorage.setItem('hasCreatedRestaurant', 'true');
+      localStorage.setItem('loggedIn', 'true');
+      
+      // Log state for debugging
+      console.log('Going to dashboard with flags - loggedIn:', localStorage.getItem('loggedIn'), 
+        'hasCreatedRestaurant:', localStorage.getItem('hasCreatedRestaurant'));
       
       // Navigate to dashboard
       console.log('Navigating to dashboard');

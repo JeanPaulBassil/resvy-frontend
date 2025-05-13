@@ -60,6 +60,9 @@ axiosInstance.interceptors.request.use(
         // Store the token for future use
         sessionStorage.setItem('token', token);
         
+        // If we have a valid token, make sure we're marked as logged in
+        localStorage.setItem('loggedIn', 'true');
+        
         console.log('Token refreshed successfully (first 10 chars):', token.substring(0, 10) + '...');
         // Set the Authorization header correctly
         config.headers.Authorization = `Bearer ${token}`;

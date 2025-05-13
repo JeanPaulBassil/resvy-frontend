@@ -39,6 +39,9 @@ export default function DashboardPage() {
   useEffect(() => {
     // Only proceed if we have user data and restaurant data is done loading
     if (!isInitializing && !isLoadingRestaurant && user && userRole === 'USER') {
+      console.log('Dashboard redirect check - user:', user.uid);
+      console.log('Dashboard redirect check - loggedIn status:', localStorage.getItem('loggedIn'));
+      console.log('Dashboard redirect check - hasCreatedRestaurant:', localStorage.getItem('hasCreatedRestaurant'));
       console.log('Dashboard redirect check - hasRestaurants:', hasRestaurants, 'isRedirecting:', isRedirecting);
       
       // Only redirect if we haven't already tried too many times (prevent infinite loops)
