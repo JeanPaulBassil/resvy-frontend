@@ -95,7 +95,32 @@ export const restaurantApi = {
       console.log('Making API request to /restaurants/my-restaurants');
       const response = await axiosInstance.get<Restaurant[]>('/restaurants/my-restaurants');
       console.log('API response received successfully');
-      return extractData(response);
+      
+      // Get the data from the response
+      const restaurants = extractData(response);
+      
+      // Additional frontend safety check - get the current user ID from localStorage
+      const userData = localStorage.getItem('userData');
+      if (userData) {
+        try {
+          const user = JSON.parse(userData);
+          const userId = user.id;
+          
+          // If we have a user ID, filter to only show restaurants owned by this user
+          // This is a safety check in case the backend doesn't filter correctly
+          if (userId) {
+            console.log(`Filtering restaurants for user ID: ${userId}`);
+            // Only filter if user is not an admin - if admin, should see all according to role
+            if (user.role !== 'ADMIN') {
+              return restaurants.filter((restaurant: Restaurant) => restaurant.ownerId === userId);
+            }
+          }
+        } catch (e) {
+          console.error('Error parsing user data:', e);
+        }
+      }
+      
+      return restaurants;
     } catch (error: any) {
       console.error('Error in getMyRestaurants:', error.message);
       
