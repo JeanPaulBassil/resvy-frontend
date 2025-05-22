@@ -638,10 +638,6 @@ export default function FloorPlan({
                 const directionX = Math.cos(angle + (Math.random() * 0.4 - 0.2));
                 const directionY = Math.sin(angle + (Math.random() * 0.4 - 0.2));
                 
-                // For unmerging, make particles explode outward from source
-                const unmergeSpread = isUnmerging ? 
-                  (i % 2 === 0 ? -1 : 1) * (20 + (i * 10)) : 0;
-                
                 return (
                   <motion.div
                     key={`particle-${anim.sourceTableId}-${i}`}

@@ -597,7 +597,7 @@ export default function FloorPlanAssignmentModal({
       e.preventDefault();
     };
 
-    const handleDocumentTouchEnd = (e: TouchEvent) => {
+    const handleDocumentTouchEnd = () => {
       // Find the dragged element
       const draggedElement = document.querySelector('[data-touch-active="true"]') as HTMLElement;
       if (!draggedElement) return;
