@@ -15,7 +15,6 @@ export function AuthCard({
   title,
   error,
   children,
-  loading,
   footerText,
   footerLinkText,
   footerLinkHref,
