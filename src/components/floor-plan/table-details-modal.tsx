@@ -40,8 +40,8 @@ export default function TableDetailsModal({
       isOpen={isOpen} 
       onOpenChange={(open) => !open && onClose()}
       backdrop="blur"
-      size="md"
-      scrollBehavior="inside"
+      size="full"
+      scrollBehavior="outside"
     >
       <ModalContent className="bg-white">
         <ModalHeader className="flex flex-col gap-1 border-b">

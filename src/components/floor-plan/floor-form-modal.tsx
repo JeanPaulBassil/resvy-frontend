@@ -122,7 +122,8 @@ export default function FloorFormModal({
     <Modal
       isOpen={isOpen}
       onOpenChange={(open) => !open && onClose()}
-      size="lg"
+      size="full"
+      scrollBehavior='outside'
       classNames={{
         base: 'max-h-[90vh]',
         backdrop: 'bg-gradient-to-tr from-gray-900/60 to-gray-900/40 backdrop-blur-sm',

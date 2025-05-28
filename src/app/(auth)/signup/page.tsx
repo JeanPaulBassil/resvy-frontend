@@ -35,7 +35,7 @@ export const metadata: Metadata = {
 
 export default function SignUpPage() {
   return (
-    <div className="flex h-screen w-full items-center justify-start overflow-hidden bg-content1 p-2 sm:p-4 lg:p-8 relative">
+    <div className="flex min-h-[100dvh] w-full items-center justify-start overflow-hidden bg-content1 p-2 sm:p-4 lg:p-8 relative">
       <Image
         src="/images/auth/signupBg.png"
         alt="Sign up background"
@@ -44,7 +44,7 @@ export default function SignUpPage() {
         className="object-cover z-0"
       />
 
-      <div className="absolute bottom-10 left-10 hidden md:block z-10">
+      <div className="absolute bottom-10 right-5 hidden md:block z-10">
         <p className="max-w-xl text-white/70 leading-relaxed">
           <span className="font-medium">"</span>
           Join hundreds of restaurants who are leveraging Resvy to optimize their reservations and drive sustainable growth.
@@ -52,8 +52,10 @@ export default function SignUpPage() {
         </p>
       </div>
 
-      <div className="z-10 w-full max-w-md">
+      <div className="z-10 w-full max-w-md md:max-w-sm lg:max-w-md">
+        <div className="flex flex-col gap-4">
         <SignUpForm />
+        </div>
       </div>
     </div>
   );

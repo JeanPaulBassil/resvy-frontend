@@ -131,7 +131,7 @@ export default function StatusChangeModal({
   const partyInfo = `${reservation.guest?.name || 'Guest'} - Party of ${reservation.numberOfGuests}`;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} placement="center" size="md">
+    <Modal isOpen={isOpen} onClose={onClose} placement="center" size="full" scrollBehavior='outside'>
       <ModalContent>
         {(onClose) => (
           <>

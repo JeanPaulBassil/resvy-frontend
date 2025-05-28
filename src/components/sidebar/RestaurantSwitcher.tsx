@@ -1,26 +1,26 @@
+import { useToast } from '@/contexts/ToastContext';
 import {
   Button,
   Dropdown,
   DropdownItem,
   DropdownMenu,
-  DropdownTrigger,
   DropdownSection,
-  Skeleton,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
+  DropdownTrigger,
   Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  Skeleton,
   Textarea,
-  useDisclosure
+  useDisclosure,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useRouter } from 'next/navigation';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useRestaurant } from '../providers/RestaurantProvider';
 import { useSidebar } from '../providers/SidebarProvider';
-import { useToast } from '@/contexts/ToastContext';
 
 // Initial restaurant form state
 interface RestaurantForm {
@@ -36,7 +36,7 @@ const initialRestaurantForm: RestaurantForm = {
   description: '',
   address: '',
   phone: '',
-  email: ''
+  email: '',
 };
 
 export default function RestaurantSwitcher() {
@@ -46,7 +46,7 @@ export default function RestaurantSwitcher() {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   const toast = useToast();
-  
+
   // Modal state
   const { isOpen: isModalOpen, onOpen: onOpenModal, onClose: onCloseModal } = useDisclosure();
   const [restaurantForm, setRestaurantForm] = useState<RestaurantForm>(initialRestaurantForm);
@@ -59,53 +59,56 @@ export default function RestaurantSwitcher() {
   }, [restaurants]);
 
   // Memoize the action handler to prevent unnecessary rerenders
-  const handleAction = useCallback((key: React.Key) => {
-    setIsOpen(false);
-    
-    if (key === 'add-restaurant') {
-      onOpenModal();
-    } else if (key === 'restaurant-settings') {
-      router.push('/restaurant-settings');
-    } else {
-      // Handle restaurant selection
-      const selected = restaurants?.find((r) => r.id === key);
-      if (selected) {
-        setCurrentRestaurant(selected);
+  const handleAction = useCallback(
+    (key: React.Key) => {
+      setIsOpen(false);
+
+      if (key === 'add-restaurant') {
+        onOpenModal();
+      } else if (key === 'restaurant-settings') {
+        router.push('/restaurant-settings');
+      } else {
+        // Handle restaurant selection
+        const selected = restaurants?.find((r) => r.id === key);
+        if (selected) {
+          setCurrentRestaurant(selected);
+        }
       }
-    }
-  }, [restaurants, router, setCurrentRestaurant, onOpenModal]);
+    },
+    [restaurants, router, setCurrentRestaurant, onOpenModal]
+  );
 
   // Handle input change in the form
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setRestaurantForm(prev => ({
+    setRestaurantForm((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   // Validate form
   const validateForm = (): boolean => {
     const errors: Partial<RestaurantForm> = {};
-    
+
     if (!restaurantForm.name.trim()) {
       errors.name = 'Restaurant name is required';
     }
-    
+
     if (!restaurantForm.address.trim()) {
       errors.address = 'Address is required';
     }
-    
+
     if (!restaurantForm.phone.trim()) {
       errors.phone = 'Phone number is required';
     }
-    
+
     if (!restaurantForm.email.trim()) {
       errors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(restaurantForm.email)) {
       errors.email = 'Please enter a valid email';
     }
-    
+
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -113,18 +116,18 @@ export default function RestaurantSwitcher() {
   // Handle form submission
   const handleSubmit = async () => {
     if (!validateForm()) return;
-    
+
     setIsSubmitting(true);
-    
+
     try {
       // Call the API to add a restaurant
       if (addRestaurant) {
         const newRestaurant = await addRestaurant(restaurantForm);
         toast.success('Restaurant added successfully');
-        
+
         // Automatically select the new restaurant
         setCurrentRestaurant(newRestaurant);
-        
+
         onCloseModal();
         setRestaurantForm(initialRestaurantForm);
       }
@@ -180,12 +183,9 @@ export default function RestaurantSwitcher() {
   }
 
   return (
-    <div className="mb-4">
+    <div className="">
       <p className="text-primary-foreground/80 text-xs font-medium mb-2 px-2">RESTAURANT</p>
-      <Dropdown 
-        isOpen={isOpen} 
-        onOpenChange={setIsOpen}
-      >
+      <Dropdown isOpen={isOpen} onOpenChange={setIsOpen}>
         <DropdownTrigger>
           <Button
             radius="sm"
@@ -236,7 +236,7 @@ export default function RestaurantSwitcher() {
               </DropdownItem>
             ))}
           </DropdownSection>
-          
+
           {/* Section 2: Restaurant Actions */}
           <DropdownSection title="ACTIONS">
             <DropdownItem
@@ -246,7 +246,7 @@ export default function RestaurantSwitcher() {
             >
               Add Restaurant
             </DropdownItem>
-            
+
             <DropdownItem
               key="restaurant-settings"
               startContent={<Icon icon="solar:settings-linear" className="text-primary" />}
@@ -259,7 +259,15 @@ export default function RestaurantSwitcher() {
       </Dropdown>
 
       {/* Add Restaurant Modal */}
-      <Modal isOpen={isModalOpen} onClose={handleModalClose} size="lg">
+      <Modal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        size="lg"
+        classNames={{
+          wrapper: 'z-[70]',
+          backdrop: 'z-[65]',
+        }}
+      >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
@@ -283,7 +291,7 @@ export default function RestaurantSwitcher() {
                   startContent={<Icon icon="solar:home-2-linear" className="text-gray-400" />}
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium mb-1">Description</label>
                 <Textarea
@@ -295,7 +303,7 @@ export default function RestaurantSwitcher() {
                   errorMessage={formErrors.description}
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium mb-1">Address*</label>
                 <Input
@@ -308,7 +316,7 @@ export default function RestaurantSwitcher() {
                   startContent={<Icon icon="solar:map-point-linear" className="text-gray-400" />}
                 />
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">Phone*</label>
@@ -322,7 +330,7 @@ export default function RestaurantSwitcher() {
                     startContent={<Icon icon="solar:phone-linear" className="text-gray-400" />}
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium mb-1">Email*</label>
                   <Input
@@ -339,14 +347,11 @@ export default function RestaurantSwitcher() {
             </div>
           </ModalBody>
           <ModalFooter>
-            <Button 
-              variant="flat" 
-              onClick={handleModalClose}
-            >
+            <Button variant="flat" onClick={handleModalClose}>
               Cancel
             </Button>
-            <Button 
-              color="primary" 
+            <Button
+              color="primary"
               className="bg-[#75CAA6]"
               onClick={handleSubmit}
               isLoading={isSubmitting}

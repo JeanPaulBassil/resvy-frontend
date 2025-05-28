@@ -582,7 +582,7 @@ export default function ShiftsPage() {
       </div>
 
       {/* Create/Edit Shift Modal */}
-      <Modal isOpen={isOpen} onClose={onClose} size="lg">
+      <Modal isOpen={isOpen} onClose={onClose} size="full" placement="top" scrollBehavior="inside">
         <ModalContent>
           <ModalHeader>
             <h3 className="text-xl font-semibold">{selectedShift ? 'Edit Shift' : 'Create New Shift'}</h3>

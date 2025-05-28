@@ -132,7 +132,7 @@ export default function AddReservationModal({
   // Guest selection step
   if (step === 'guest-selection') {
     return (
-      <div className="p-6 flex flex-col" style={{ height: '650px' }}>
+      <div className="p-6 flex flex-col min-h-0">
         <div className="mb-4 flex-shrink-0">
           <h2 className="text-xl font-semibold mb-1">Add Reservation</h2>
           <p className="text-gray-500">Search for an existing guest or create a new one</p>
@@ -186,7 +186,7 @@ export default function AddReservationModal({
         </div>
         
         {isCreatingGuest ? (
-          <div className="mt-4 border rounded-lg p-4 overflow-auto flex-1">
+          <div className="mt-4 border rounded-lg p-4 flex-shrink-0">
             <div className="flex justify-between items-center mb-3">
               <h3 className="text-lg font-medium">Create New Guest</h3>
               <Button
@@ -262,7 +262,7 @@ export default function AddReservationModal({
             </div>
           </div>
         ) : !searchQuery && (
-          <div className="flex flex-col items-center justify-center flex-1">
+          <div className="flex flex-col items-center justify-center py-12">
             <div className="inline-flex justify-center items-center w-16 h-16 bg-gray-100 rounded-full mb-4">
               <User className="h-8 w-8 text-gray-400" />
             </div>
@@ -278,7 +278,7 @@ export default function AddReservationModal({
   
   // Reservation form step
   return (
-    <div className="p-4" style={{ height: '650px', overflow: 'auto' }}>
+    <div className="p-3">
       {chosenGuest && (
         <ReservationForm
           guest={chosenGuest}

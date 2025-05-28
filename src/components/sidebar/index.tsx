@@ -201,31 +201,30 @@ export default function AppWrapper() {
     <div className="h-full relative flex-shrink-0">
       {/* Sidebar container with dynamic width */}
       <div
-        className={`relative flex h-full flex-col bg-[#75CAA6] transition-all duration-300 ease-in-out ${
-          isSidebarOpen ? 'w-72 p-6' : 'w-0 p-0 overflow-hidden'
+        className={`fixed top-0 left-0 h-full flex flex-col bg-[#75CAA6] transition-transform duration-300 ease-in-out transform-gpu z-50 ${
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
+        style={{ width: '18rem' }}
       >
+        <div className="flex flex-col h-full p-6">
         {/* Header with logo - fixed at top */}
         <div className="flex items-center gap-2 px-2 mb-2 flex-shrink-0">
           <div className="relative">
-            <Image src="/logo.svg" alt="logo" width={isSidebarOpen ? 200 : 0} height={100} />
-            {isSidebarOpen && (
+              <Image src="/logo.svg" alt="logo" width={200} height={100} />
               <div className="absolute bottom-0 right-0 text-white/80 text-[10px] italic font-light transform translate-x-8 translate-y-1">
                 by rooster
               </div>
-            )}
           </div>
         </div>
 
         {/* Restaurant Switcher - fixed below header */}
-        {isSidebarOpen && userRole === 'USER' && (
+          {userRole === 'USER' && (
           <div className="flex-shrink-0">
             <RestaurantSwitcher />
           </div>
         )}
 
         {/* Sidebar content - scrollable section */}
-        {isSidebarOpen && (
           <div className="flex-grow overflow-hidden flex flex-col min-h-0">
             <ScrollShadow className="-mr-6 h-full py-6 pr-6 overflow-y-auto">
               <Sidebar
@@ -245,27 +244,18 @@ export default function AppWrapper() {
               <Spacer y={8} />
             </ScrollShadow>
           </div>
-        )}
 
         {/* Footer with user settings - fixed at bottom */}
-        {isSidebarOpen && (
-          <div className="mt-auto flex flex-col flex-shrink-0">
-            <div className="flex items-center gap-3 px-2">
-              <div className="flex flex-col"></div>
-            </div>
-            <UserSettingsDropdown variant="sidebar" />
+          <div className="flex-shrink-0 mt-auto pt-4">
+            <UserSettingsDropdown />
           </div>
-        )}
+        </div>
       </div>
 
       {/* Toggle button positioned in the middle of the sidebar edge */}
       <div
-        style={{
-          left: isSidebarOpen ? '18rem' : '0', // Using style for smooth transition
-          transition: 'left 0.3s ease-in-out, background-color 0.2s',
-        }}
-        className={`absolute top-1/2 -translate-y-1/2 z-20 bg-[#75CAA6] text-white shadow-md hover:bg-[#5fb992] hover:shadow-lg h-10 w-6 p-0 min-w-0 rounded-r-md ${
-          isSidebarOpen ? 'border-l border-white/20' : ''
+        className={`fixed top-1/2 -translate-y-1/2 z-[60] bg-[#75CAA6] text-white shadow-md hover:bg-[#5fb992] hover:shadow-lg h-10 w-6 p-0 min-w-0 rounded-r-md transform-gpu transition-transform duration-300 ease-in-out ${
+          isSidebarOpen ? 'translate-x-[18rem] border-l border-white/20' : 'translate-x-0'
         }`}
       >
         <button

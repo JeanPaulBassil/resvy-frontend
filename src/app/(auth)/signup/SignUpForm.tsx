@@ -9,11 +9,11 @@ import { InputField } from '@/components/forms/InputField';
 import { InputPasswordField } from '@/components/forms/InputPasswordField';
 import { useSignUpForm } from '@/hooks/forms/useSignupForm';
 import { useAuthState } from '@/hooks/useAuthState';
-import { signInWithGoogle, signUp } from '@/services/authService';
+import { signUp } from '@/services/authService';
 import { handleAuthError } from '@/utils/firebaseErrors';
 
 export default function SignUpForm() {
-  const { state, startEmailLoading, startGoogleLoading, stopAllLoading, setError } = useAuthState();
+  const { state, startEmailLoading, stopAllLoading, setError } = useAuthState();
 
   const {
     register,
@@ -34,24 +34,11 @@ export default function SignUpForm() {
     }
   }
 
-  const handleGoogleSignIn = async () => {
-    startGoogleLoading();
-    try {
-      await signInWithGoogle();
-      router.replace('/');
-    } catch (err) {
-      setError(handleAuthError(err));
-    } finally {
-      stopAllLoading();
-    }
-  };
-
   return (
     <AuthCard
       title="Sign Up"
       error={state.error}
-      loading={state.googleLoading}
-      onGoogleClick={handleGoogleSignIn}
+      loading={state.emailLoading}
       footerText="Already have an account?"
       footerLinkText="Log In"
       footerLinkHref="/login"
@@ -87,7 +74,7 @@ export default function SignUpForm() {
           color="primary"
           type="submit"
           isLoading={state.emailLoading}
-          disabled={state.emailLoading || state.googleLoading}
+          disabled={state.emailLoading}
         >
           Sign Up
         </Button>

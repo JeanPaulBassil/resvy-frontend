@@ -11,7 +11,7 @@ function LoginPageContent() {
   const reason = searchParams.get('reason');
   
   return (
-    <div className="flex h-screen w-full items-center justify-end overflow-hidden bg-content1 p-2 sm:p-4 lg:p-8 relative">
+    <div className="flex min-h-[100dvh] w-full items-center justify-end overflow-hidden bg-content1 p-2 sm:p-4 lg:p-8 relative">
       <Image
         src="/images/auth/loginBg.png"
         alt="Login background"
@@ -33,8 +33,10 @@ function LoginPageContent() {
         </p>
       </div>
 
-      <div className="z-10 w-full max-w-md">
+      <div className="z-10 w-full max-w-md md:max-w-sm lg:max-w-md">
+        <div className="flex flex-col gap-4">
         <LoginForm reason={reason} />
+        </div>
       </div>
     </div>
   );

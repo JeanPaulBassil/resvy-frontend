@@ -1,6 +1,7 @@
 'use client';
 
 import { Guest, UpdateGuestDto } from '@/api/guest';
+import { CreateReservationDto } from '@/api/reservation';
 import { ReservationForm } from '@/components/shared/ReservationForm';
 import { useDeleteGuest, useUpdateGuest } from '@/hooks/useGuest';
 import { classNames } from '@/lib/utils';
@@ -50,11 +51,10 @@ import {
   UtensilsCrossed,
   Wine,
 } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useRestaurant } from '../providers/RestaurantProvider';
-import { CreateReservationDto } from '@/api/reservation';
 
 interface GuestDetailViewProps {
   guest: Guest;
@@ -130,10 +130,38 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
   const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>(
     guest.dietaryRestrictions || []
   );
-  const [allergies, setAllergies] = useState<string>(
-    guest.allergies || ''
-  );
+  const [allergies, setAllergies] = useState<string>(guest.allergies || '');
   const [customRestriction, setCustomRestriction] = useState<string>('');
+
+  // Keyboard handling for iPad - Set CSS custom property for actual viewport height
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const setVh = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
+
+    // Set initial value
+    setVh();
+
+    // Listen for resize events
+    window.addEventListener('resize', setVh);
+    window.addEventListener('orientationchange', setVh);
+
+    // Also listen for visual viewport changes (keyboard)
+    if ('visualViewport' in window) {
+      window.visualViewport?.addEventListener('resize', setVh);
+    }
+
+    return () => {
+      window.removeEventListener('resize', setVh);
+      window.removeEventListener('orientationchange', setVh);
+      if ('visualViewport' in window) {
+        window.visualViewport?.removeEventListener('resize', setVh);
+      }
+    };
+  }, []);
 
   // Initialize hooks for API operations
   const deleteGuestMutation = useDeleteGuest(currentRestaurant?.id as string);
@@ -156,7 +184,7 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
 
   const handleDelete = async () => {
     setIsDeleting(true);
-    
+
     try {
       await deleteGuestMutation.mutateAsync(guest.id);
       setIsDeleteModalOpen(false);
@@ -178,7 +206,7 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
 
   const onSubmit = async (data: GuestFormValues) => {
     setIsSubmitting(true);
-    
+
     const updateData: UpdateGuestDto = {
       name: data.name,
       phone: data.phone,
@@ -239,7 +267,7 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
 
       // Update the guest with the new preferences
       const updatedGuest = await updateGuestMutation.mutateAsync(updateData);
-      
+
       // Update local state
       setGuest(updatedGuest);
       setIsPreferencesModalOpen(false);
@@ -269,7 +297,7 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
 
       // Update the guest with the new restrictions
       const updatedGuest = await updateGuestMutation.mutateAsync(updateData);
-      
+
       // Update local state
       setGuest(updatedGuest);
       setIsRestrictionsModalOpen(false);
@@ -297,12 +325,12 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
       // TODO: Replace with actual API call when reservation API is implemented
       // Example: await createReservationMutation.mutateAsync({...reservationData, restaurantId});
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      
+
       console.log('Creating reservation:', {
         ...reservationData,
         guestName: guest.name,
       });
-      
+
       setIsReservationModalOpen(false);
     } catch {
       // Error handling will be managed by the mutation hook when implemented
@@ -312,7 +340,7 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -345,13 +373,7 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
               </h1>
               <div className="flex flex-wrap gap-2 mt-2">
                 {guest.tags.map((tag) => (
-                  <Chip
-                    key={tag}
-                    color={getTagColor(tag)}
-                    variant="flat"
-                    radius="sm"
-                    size="sm"
-                  >
+                  <Chip key={tag} color={getTagColor(tag)} variant="flat" radius="sm" size="sm">
                     {tag}
                   </Chip>
                 ))}
@@ -403,7 +425,7 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
                       {guest.visitCount} {guest.visitCount === 1 ? 'visit' : 'visits'} recorded
                     </span>
                   </div>
-              </div>
+                </div>
 
                 <Divider />
 
@@ -428,7 +450,7 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
                       <Mail className="h-4 w-4 text-gray-400 mr-3 flex-shrink-0" />
                       <span className="text-sm text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 truncate">
                         {guest.email}
-                    </span>
+                      </span>
                     </a>
                     <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mb-4">
                       <Calendar className="h-4 w-4 text-gray-400 dark:text-gray-500" />
@@ -547,9 +569,9 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
                           size="sm"
                           onPress={openPreferencesModal}
                         >
-                          {guest.diningPreferences && guest.diningPreferences.length > 0 
-                            ? "Edit Preferences" 
-                            : "Add Preferences"}
+                          {guest.diningPreferences && guest.diningPreferences.length > 0
+                            ? 'Edit Preferences'
+                            : 'Add Preferences'}
                         </Button>
                       </CardFooter>
                     </Card>
@@ -561,7 +583,8 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
                         </h4>
                       </CardHeader>
                       <CardBody className="py-3 px-4">
-                        {(guest.dietaryRestrictions && guest.dietaryRestrictions.length > 0) || guest.allergies ? (
+                        {(guest.dietaryRestrictions && guest.dietaryRestrictions.length > 0) ||
+                        guest.allergies ? (
                           <div className="space-y-3">
                             {guest.dietaryRestrictions && guest.dietaryRestrictions.length > 0 && (
                               <div>
@@ -577,7 +600,7 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
                                 </div>
                               </div>
                             )}
-                            
+
                             {guest.allergies && (
                               <div>
                                 <span className="text-xs font-medium text-gray-500 dark:text-gray-400 block mb-1">
@@ -603,9 +626,10 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
                           size="sm"
                           onPress={openRestrictionsModal}
                         >
-                          {(guest.dietaryRestrictions && guest.dietaryRestrictions.length > 0) || guest.allergies
-                            ? "Edit Restrictions" 
-                            : "Add Restrictions"}
+                          {(guest.dietaryRestrictions && guest.dietaryRestrictions.length > 0) ||
+                          guest.allergies
+                            ? 'Edit Restrictions'
+                            : 'Add Restrictions'}
                         </Button>
                       </CardFooter>
                     </Card>
@@ -632,7 +656,9 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
                   <div className="py-8 text-center text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/40 rounded-lg">
                     <CalendarDays className="h-10 w-10 mx-auto text-gray-300 dark:text-gray-600 mb-3" />
                     <p className="text-sm">Reservation history coming soon</p>
-                    <p className="text-xs mt-2">Reservations will be integrated in the next update</p>
+                    <p className="text-xs mt-2">
+                      Reservations will be integrated in the next update
+                    </p>
                   </div>
                 </div>
               </Tab>
@@ -712,10 +738,10 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
       <Modal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        placement="center"
+        placement="top"
         scrollBehavior="inside"
         classNames={{
-          base: 'max-w-md max-h-[90vh]',
+          base: 'max-h-[calc(var(--vh,1vh)*90)]',
           wrapper: 'z-50',
           body: 'p-0',
           closeButton:
@@ -723,25 +749,25 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
           backdrop: 'bg-gray-900/60 backdrop-blur-sm',
         }}
       >
-        <ModalContent>
-          <ModalHeader className="pt-6 px-6 pb-2 flex flex-col items-center text-center">
+        <ModalContent className="overflow-hidden flex flex-col max-h-[calc(var(--vh,1vh)*90)]">
+          <ModalHeader className="pt-4 px-4 pb-2 flex flex-col items-center text-center flex-shrink-0">
             <Avatar
               name={guest.name}
-              className="h-16 w-16 bg-success-50 text-success-500 dark:bg-success-900/20 dark:text-success-400 text-xl mb-3"
+              className="h-12 w-12 bg-success-50 text-success-500 dark:bg-success-900/20 dark:text-success-400 text-lg mb-2"
               showFallback
               isBordered
               color="success"
             />
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Edit Guest</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Edit Guest</h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               Update guest details and preferences
             </p>
           </ModalHeader>
 
-          <ModalBody>
+          <ModalBody className="flex-1 overflow-y-auto py-2">
             <form id="edit-guest-form" onSubmit={handleSubmit(onSubmit)}>
-              <div className="px-6 pt-4 pb-2">
-                <div className="space-y-4">
+              <div className="px-4 pt-2 pb-2">
+                <div className="space-y-3">
                   <div>
                     <Input
                       label="Full Name"
@@ -753,9 +779,10 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
                       errorMessage={errors.name?.message}
                       radius="sm"
                       variant="flat"
+                      size="sm"
                       classNames={{
                         inputWrapper: 'bg-gray-50/50 dark:bg-gray-800/30 shadow-sm',
-                        label: 'text-gray-700 dark:text-gray-300 font-medium text-sm mb-1.5',
+                        label: 'text-gray-700 dark:text-gray-300 font-medium text-sm mb-1',
                         base: 'mt-0',
                       }}
                       {...register('name')}
@@ -773,9 +800,10 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
                       errorMessage={errors.phone?.message}
                       radius="sm"
                       variant="flat"
+                      size="sm"
                       classNames={{
                         inputWrapper: 'bg-gray-50/50 dark:bg-gray-800/30 shadow-sm',
-                        label: 'text-gray-700 dark:text-gray-300 font-medium text-sm mb-1.5',
+                        label: 'text-gray-700 dark:text-gray-300 font-medium text-sm mb-1',
                         base: 'mt-0',
                       }}
                       {...register('phone')}
@@ -792,9 +820,10 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
                       errorMessage={errors.email?.message}
                       radius="sm"
                       variant="flat"
+                      size="sm"
                       classNames={{
                         inputWrapper: 'bg-gray-50/50 dark:bg-gray-800/30 shadow-sm',
-                        label: 'text-gray-700 dark:text-gray-300 font-medium text-sm mb-1.5',
+                        label: 'text-gray-700 dark:text-gray-300 font-medium text-sm mb-1',
                         base: 'mt-0',
                       }}
                       {...register('email')}
@@ -802,16 +831,17 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
                   </div>
 
                   <div>
-                    <p className="text-sm text-gray-700 dark:text-gray-300 font-medium mb-1.5">
+                    <p className="text-sm text-gray-700 dark:text-gray-300 font-medium mb-1">
                       Categories
                     </p>
-                    <div className="flex flex-wrap gap-2 p-3 bg-gray-50/70 dark:bg-gray-800/20 rounded-lg shadow-sm">
+                    <div className="flex flex-wrap gap-1.5 p-2.5 bg-gray-50/70 dark:bg-gray-800/20 rounded-lg shadow-sm">
                       {availableTags.map((tag) => (
                         <Chip
                           key={tag}
                           variant={selectedTags.includes(tag) ? 'solid' : 'flat'}
                           color={selectedTags.includes(tag) ? getTagColor(tag) : 'default'}
                           radius="sm"
+                          size="sm"
                           startContent={
                             selectedTags.includes(tag) ? <Check className="h-3 w-3" /> : undefined
                           }
@@ -826,36 +856,37 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
                           {tag}
                         </Chip>
                       ))}
-          </div>
-        </div>
+                    </div>
+                  </div>
 
                   <div>
                     <Textarea
                       label="Notes"
                       labelPlacement="outside"
                       placeholder="Add any special notes or preferences..."
-                      rows={3}
+                      rows={2}
                       radius="sm"
                       variant="flat"
                       classNames={{
                         inputWrapper: 'bg-gray-50/50 dark:bg-gray-800/30 shadow-sm',
                         input: 'text-sm',
-                        label: 'text-gray-700 dark:text-gray-300 font-medium text-sm mb-1.5',
+                        label: 'text-gray-700 dark:text-gray-300 font-medium text-sm mb-1',
                         base: 'mt-0',
                       }}
                       {...register('notes')}
                     />
                   </div>
-              </div>
+                </div>
               </div>
 
-              <ModalFooter className="px-6 py-4 bg-gray-50/80 dark:bg-gray-800/20 border-t border-gray-100 dark:border-gray-800">
+              <ModalFooter className="px-4 py-3 bg-gray-50/80 dark:bg-gray-800/20 border-t border-gray-100 dark:border-gray-800 flex-shrink-0">
                 <Button
                   variant="flat"
                   color="default"
                   onPress={() => setIsEditModalOpen(false)}
                   className="flex-1"
                   radius="sm"
+                  size="sm"
                 >
                   Cancel
                 </Button>
@@ -866,6 +897,7 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
                   startContent={!isSubmitting && <Save className="h-3.5 w-3.5" />}
                   className="flex-1 text-white"
                   radius="sm"
+                  size="sm"
                 >
                   {isSubmitting ? 'Saving...' : 'Save Changes'}
                 </Button>
@@ -879,10 +911,10 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
       <Modal
         isOpen={isPreferencesModalOpen}
         onClose={() => setIsPreferencesModalOpen(false)}
-        placement="center"
+        placement="top"
         scrollBehavior="inside"
         classNames={{
-          base: 'max-w-md max-h-[90vh]',
+          base: 'max-h-[calc(var(--vh,1vh)*90)]',
           wrapper: 'z-50',
           body: 'p-0',
           closeButton:
@@ -890,22 +922,22 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
           backdrop: 'bg-gray-900/60 backdrop-blur-sm',
         }}
       >
-        <ModalContent>
-          <ModalHeader className="pt-6 px-6 pb-2 flex flex-col items-center text-center">
-            <div className="p-3 rounded-full bg-emerald-50 text-emerald-500 dark:bg-emerald-900/20 dark:text-emerald-400 mb-3">
-              <Wine className="h-6 w-6" />
+        <ModalContent className="overflow-hidden flex flex-col max-h-[calc(var(--vh,1vh)*90)]">
+          <ModalHeader className="pt-4 px-4 pb-2 flex flex-col items-center text-center flex-shrink-0">
+            <div className="p-2.5 rounded-full bg-emerald-50 text-emerald-500 dark:bg-emerald-900/20 dark:text-emerald-400 mb-2">
+              <Wine className="h-5 w-5" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               Dining Preferences
             </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               Customize dining experience for {guest.name}
             </p>
           </ModalHeader>
 
-          <ModalBody>
-            <div className="px-6 py-4">
-              <div className="space-y-5">
+          <ModalBody className="flex-1 overflow-y-auto py-2">
+            <div className="px-4 py-2">
+              <div className="space-y-4">
                 <div>
                   <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Preferred Seating
@@ -915,8 +947,9 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
                     onValueChange={setPreferredSeating}
                     color="success"
                     orientation="horizontal"
+                    size="sm"
                     classNames={{
-                      wrapper: 'gap-4 flex-wrap',
+                      wrapper: 'gap-3 flex-wrap',
                     }}
                   >
                     <Radio value="window">Window</Radio>
@@ -926,21 +959,22 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
                     <Radio value="quiet">Quiet Area</Radio>
                     <Radio value="no-preference">No Preference</Radio>
                   </RadioGroup>
-          </div>
+                </div>
 
-                <Divider className="my-3" />
+                <Divider className="my-2" />
 
                 <div>
                   <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Guest Preferences
                   </h4>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 gap-2">
                     <CheckboxGroup
                       value={selectedPreferences}
                       onValueChange={setSelectedPreferences}
                       color="success"
+                      size="sm"
                       classNames={{
-                        wrapper: 'gap-2',
+                        wrapper: 'gap-1.5',
                       }}
                     >
                       <Checkbox value="wine-enthusiast">
@@ -968,13 +1002,13 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
                         </div>
                       </Checkbox>
                       <Checkbox value="regular-menu">
-              <div className="flex items-center">
+                        <div className="flex items-center">
                           <Check className="h-3.5 w-3.5 mr-2 text-gray-500" />
                           <span className="text-sm">Regular Menu</span>
-              </div>
+                        </div>
                       </Checkbox>
                       <Checkbox value="specials-only">
-              <div className="flex items-center">
+                        <div className="flex items-center">
                           <Star className="h-3.5 w-3.5 mr-2 text-gray-500" />
                           <span className="text-sm">Specials Only</span>
                         </div>
@@ -982,7 +1016,7 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
                     </CheckboxGroup>
                   </div>
 
-                  <div className="mt-4">
+                  <div className="mt-3">
                     <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Custom Preference
                     </h4>
@@ -993,6 +1027,7 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
                         onValueChange={setCustomPreference}
                         radius="sm"
                         variant="flat"
+                        size="sm"
                         classNames={{
                           inputWrapper: 'bg-gray-50/50 dark:bg-gray-800/30 shadow-sm',
                           input: 'text-sm',
@@ -1002,6 +1037,7 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
                       <Button
                         color="success"
                         radius="sm"
+                        size="sm"
                         isDisabled={customPreference.trim() === ''}
                         onPress={handleAddCustomPreference}
                         className="text-white"
@@ -1026,7 +1062,7 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
                       <h4 className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
                         Custom Preferences Added:
                       </h4>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-1.5">
                         {selectedPreferences
                           .filter(
                             (p) =>
@@ -1062,13 +1098,14 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
               </div>
             </div>
 
-            <ModalFooter className="px-6 py-4 bg-gray-50/80 dark:bg-gray-800/20 border-t border-gray-100 dark:border-gray-800">
+            <ModalFooter className="px-4 py-3 bg-gray-50/80 dark:bg-gray-800/20 border-t border-gray-100 dark:border-gray-800 flex-shrink-0">
               <Button
                 variant="flat"
                 color="default"
                 onPress={() => setIsPreferencesModalOpen(false)}
                 className="flex-1"
                 radius="sm"
+                size="sm"
               >
                 Cancel
               </Button>
@@ -1078,6 +1115,7 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
                 isLoading={isSavingPreferences}
                 className="flex-1 text-white"
                 radius="sm"
+                size="sm"
               >
                 {isSavingPreferences ? 'Saving...' : 'Save Preferences'}
               </Button>
@@ -1090,10 +1128,10 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
       <Modal
         isOpen={isRestrictionsModalOpen}
         onClose={() => setIsRestrictionsModalOpen(false)}
-        placement="center"
+        placement="top"
         scrollBehavior="inside"
         classNames={{
-          base: 'max-w-md max-h-[90vh]',
+          base: 'max-w-md max-h-[calc(var(--vh,1vh)*90)]',
           wrapper: 'z-50',
           body: 'p-0',
           closeButton:
@@ -1101,33 +1139,34 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
           backdrop: 'bg-gray-900/60 backdrop-blur-sm',
         }}
       >
-        <ModalContent>
-          <ModalHeader className="pt-6 px-6 pb-2 flex flex-col items-center text-center">
-            <div className="p-3 rounded-full bg-danger-50 text-danger-500 dark:bg-danger-900/20 dark:text-danger-400 mb-3">
-              <UtensilsCrossed className="h-6 w-6" />
+        <ModalContent className="overflow-hidden flex flex-col max-h-[calc(var(--vh,1vh)*90)]">
+          <ModalHeader className="pt-4 px-4 pb-2 flex flex-col items-center text-center flex-shrink-0">
+            <div className="p-2.5 rounded-full bg-danger-50 text-danger-500 dark:bg-danger-900/20 dark:text-danger-400 mb-2">
+              <UtensilsCrossed className="h-5 w-5" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               Dietary Restrictions
             </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               Track allergies and food preferences for {guest.name}
             </p>
           </ModalHeader>
 
-          <ModalBody>
-            <div className="px-6 py-4">
-              <div className="space-y-5">
+          <ModalBody className="flex-1 overflow-y-auto py-2">
+            <div className="px-4 py-2">
+              <div className="space-y-4">
                 <div>
                   <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Dietary Restrictions
                   </h4>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-1.5">
                     <CheckboxGroup
                       value={dietaryRestrictions}
                       onValueChange={setDietaryRestrictions}
                       color="success"
+                      size="sm"
                       classNames={{
-                        wrapper: 'gap-2',
+                        wrapper: 'gap-1.5',
                       }}
                     >
                       <Checkbox value="vegetarian">Vegetarian</Checkbox>
@@ -1143,7 +1182,7 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
                     </CheckboxGroup>
                   </div>
 
-                  <div className="mt-4">
+                  <div className="mt-3">
                     <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Custom Restriction
                     </h4>
@@ -1154,6 +1193,7 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
                         onValueChange={setCustomRestriction}
                         radius="sm"
                         variant="flat"
+                        size="sm"
                         classNames={{
                           inputWrapper: 'bg-gray-50/50 dark:bg-gray-800/30 shadow-sm',
                           input: 'text-sm',
@@ -1163,14 +1203,15 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
                       <Button
                         color="success"
                         radius="sm"
+                        size="sm"
                         isDisabled={customRestriction.trim() === ''}
                         onPress={handleAddCustomRestriction}
                         className="text-white"
                       >
                         Add
                       </Button>
-          </div>
-        </div>
+                    </div>
+                  </div>
 
                   {dietaryRestrictions.filter(
                     (r) =>
@@ -1191,7 +1232,7 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
                       <h4 className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
                         Custom Restrictions Added:
                       </h4>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-1.5">
                         {dietaryRestrictions
                           .filter(
                             (r) =>
@@ -1225,11 +1266,11 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
                             </Chip>
                           ))}
                       </div>
-            </div>
-          )}
-        </div>
+                    </div>
+                  )}
+                </div>
 
-                <Divider className="my-3" />
+                <Divider className="my-2" />
 
                 <div>
                   <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -1241,7 +1282,8 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
                     onValueChange={setAllergies}
                     radius="sm"
                     variant="flat"
-                    rows={3}
+                    size="sm"
+                    rows={2}
                     classNames={{
                       inputWrapper: 'bg-gray-50/50 dark:bg-gray-800/30 shadow-sm',
                       input: 'text-sm',
@@ -1251,17 +1293,18 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
                     <AlertTriangle className="h-3.5 w-3.5 inline mr-1" />
                     Food allergies will be highlighted to service staff
                   </p>
-          </div>
-        </div>
-      </div>
+                </div>
+              </div>
+            </div>
 
-            <ModalFooter className="px-6 py-4 bg-gray-50/80 dark:bg-gray-800/20 border-t border-gray-100 dark:border-gray-800">
+            <ModalFooter className="px-4 py-3 bg-gray-50/80 dark:bg-gray-800/20 border-t border-gray-100 dark:border-gray-800 flex-shrink-0">
               <Button
                 variant="flat"
                 color="default"
                 onPress={() => setIsRestrictionsModalOpen(false)}
                 className="flex-1"
                 radius="sm"
+                size="sm"
               >
                 Cancel
               </Button>
@@ -1271,6 +1314,7 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
                 isLoading={isSavingRestrictions}
                 className="flex-1 text-white"
                 radius="sm"
+                size="sm"
               >
                 {isSavingRestrictions ? 'Saving...' : 'Save Restrictions'}
               </Button>
@@ -1283,10 +1327,11 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
       <Modal
         isOpen={isReservationModalOpen}
         onClose={() => setIsReservationModalOpen(false)}
-        placement="center"
+        placement="top"
         scrollBehavior="inside"
+        size="full"
         classNames={{
-          base: 'max-w-5xl max-h-[95vh]',
+          base: 'max-h-[calc(var(--vh,1vh)*90)]',
           wrapper: 'z-50',
           body: 'p-0',
           closeButton:
@@ -1294,21 +1339,21 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
           backdrop: 'bg-gray-900/60 backdrop-blur-sm',
         }}
       >
-        <ModalContent>
-          <ModalHeader className="pt-6 px-6 pb-2 flex flex-col items-center text-center">
-            <div className="p-3 rounded-full bg-emerald-50 text-emerald-500 dark:bg-emerald-900/20 dark:text-emerald-400 mb-3">
-              <CalendarDays className="h-6 w-6" />
+        <ModalContent className="overflow-hidden flex flex-col max-h-[calc(var(--vh,1vh)*90)]">
+          <ModalHeader className="pt-4 px-4 pb-2 flex flex-col items-center text-center flex-shrink-0">
+            <div className="p-2.5 rounded-full bg-emerald-50 text-emerald-500 dark:bg-emerald-900/20 dark:text-emerald-400 mb-2">
+              <CalendarDays className="h-5 w-5" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               New Reservation
             </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               Create a reservation for {guest.name}
             </p>
           </ModalHeader>
 
-          <ModalBody>
-            <div className="px-6 py-4">
+          <ModalBody className="flex-1 overflow-y-auto py-2">
+            <div className="px-4 py-2">
               <ReservationForm
                 guest={guest}
                 preferredSeating={preferredSeating}
@@ -1324,4 +1369,4 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
       </Modal>
     </motion.div>
   );
-} 
+}

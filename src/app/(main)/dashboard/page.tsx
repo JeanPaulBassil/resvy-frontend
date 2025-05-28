@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 import { NonAdminOnly } from '@/components/auth/RoleBasedAccess';
+import ReservationStats from '@/components/dashboard/ReservationStats';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useRestaurant } from '@/components/providers/RestaurantProvider';
-import ReservationStats from '@/components/dashboard/ReservationStats';
 import { useRestaurantData } from '@/hooks/useRestaurantData';
 
 export default function DashboardPage() {
@@ -15,10 +15,10 @@ export default function DashboardPage() {
   const router = useRouter();
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [redirectAttempts, setRedirectAttempts] = useState(0);
-  
+
   // Access the restaurant data to check if user has restaurants
   const { hasRestaurants, isLoading: isLoadingRestaurant } = useRestaurant();
-  
+
   // Also use our data hook to ensure restaurant provider has data
   useRestaurantData();
 
@@ -41,20 +41,37 @@ export default function DashboardPage() {
     if (!isInitializing && !isLoadingRestaurant && user && userRole === 'USER') {
       console.log('Dashboard redirect check - user:', user.uid);
       console.log('Dashboard redirect check - loggedIn status:', localStorage.getItem('loggedIn'));
-      console.log('Dashboard redirect check - hasCreatedRestaurant:', localStorage.getItem('hasCreatedRestaurant'));
-      console.log('Dashboard redirect check - hasRestaurants:', hasRestaurants, 'isRedirecting:', isRedirecting);
-      
+      console.log(
+        'Dashboard redirect check - hasCreatedRestaurant:',
+        localStorage.getItem('hasCreatedRestaurant')
+      );
+      console.log(
+        'Dashboard redirect check - hasRestaurants:',
+        hasRestaurants,
+        'isRedirecting:',
+        isRedirecting
+      );
+
       // Only redirect if we haven't already tried too many times (prevent infinite loops)
       if (hasRestaurants === false && !isRedirecting && redirectAttempts < 2) {
         console.log('User has no restaurants, redirecting to onboarding page...');
         setIsRedirecting(true);
-        setRedirectAttempts(prev => prev + 1);
+        setRedirectAttempts((prev) => prev + 1);
         router.push('/onboarding');
       } else if (redirectAttempts >= 2) {
         console.log('Too many redirect attempts, showing dashboard anyway');
       }
     }
-  }, [hasRestaurants, isInitializing, isLoadingRestaurant, isRedirecting, redirectAttempts, router, user, userRole]);
+  }, [
+    hasRestaurants,
+    isInitializing,
+    isLoadingRestaurant,
+    isRedirecting,
+    redirectAttempts,
+    router,
+    user,
+    userRole,
+  ]);
 
   if (isInitializing || isRefreshing || isLoadingRestaurant) {
     return (
@@ -87,4 +104,4 @@ export default function DashboardPage() {
       </NonAdminOnly>
     </div>
   );
-} 
+}

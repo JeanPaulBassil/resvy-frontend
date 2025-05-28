@@ -72,6 +72,15 @@ export default function FloorSelector({
     deleteModal.onOpen();
   };
 
+  // Handler for dropdown actions
+  const handleDropdownAction = (key: string, floor: Floor) => {
+    if (key === 'edit') {
+      handleEditFloor(floor);
+    } else if (key === 'delete') {
+      handleDeleteClick(floor);
+    }
+  };
+
   return (
     <>
       <div className="flex flex-wrap gap-2">
@@ -99,35 +108,23 @@ export default function FloorSelector({
                       <Icon icon="solar:menu-dots-bold" width={12} className="text-current" />
                     </button>
                   </DropdownTrigger>
-                  <DropdownMenu>
-                    <DropdownItem key="edit">
-                      <button 
-                        className="w-full flex items-center gap-2 text-left"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEditFloor(floor);
-                        }}
-                      >
-                        <Icon icon="solar:pen-linear" width={16} />
-                        <span>Edit Floor</span>
-                      </button>
+                  <DropdownMenu
+                    onAction={(key) => handleDropdownAction(key as string, floor)}
+                  >
+                    <DropdownItem 
+                      key="edit"
+                      startContent={<Icon icon="solar:pen-linear" width={16} />}
+                    >
+                      Edit Floor
                     </DropdownItem>
                     <DropdownItem 
                       key="delete" 
                       className="text-danger"
+                      color="danger"
+                      startContent={<Icon icon="solar:trash-bin-trash-linear" width={16} />}
                       isDisabled={floors.length <= 1}
                     >
-                      <button 
-                        className="w-full flex items-center gap-2 text-left text-danger"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteClick(floor);
-                        }}
-                        disabled={floors.length <= 1}
-                      >
-                        <Icon icon="solar:trash-bin-trash-linear" width={16} />
-                        <span>Delete Floor</span>
-                      </button>
+                      Delete Floor
                     </DropdownItem>
                   </DropdownMenu>
                 </Dropdown>

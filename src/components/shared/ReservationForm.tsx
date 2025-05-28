@@ -474,14 +474,14 @@ export function ReservationForm({
   }
 
   return (
-    <div className="w-full space-y-6">
-      <div className="flex flex-col md:flex-row md:gap-8">
+    <div className="w-full space-y-4">
+      <div className="flex flex-col md:flex-row md:gap-6">
         {/* Left side - Guest info and summary */}
-        <div className="flex flex-col mb-6 md:mb-0 md:w-72">
-          <div className="bg-gray-50/80 dark:bg-gray-800/30 rounded-lg p-4 flex items-center mb-5">
+        <div className="flex flex-col mb-4 md:mb-0 md:w-64">
+          <div className="bg-gray-50/80 dark:bg-gray-800/30 rounded-lg p-3 flex items-center mb-3">
             <Avatar
               name={guest.name}
-              className="h-12 w-12 text-sm mr-4 flex-shrink-0"
+              className="h-10 w-10 text-sm mr-3 flex-shrink-0"
               color="primary"
             />
             <div className="min-w-0">
@@ -503,22 +503,22 @@ export function ReservationForm({
             )}
           </div>
 
-          <div className="bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800/20 rounded-lg p-4 mb-5">
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <CalendarDays className="h-5 w-5 text-emerald-500 mt-0.5 flex-shrink-0" />
+          <div className="bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800/20 rounded-lg p-3 mb-3">
+            <div className="space-y-3">
+              <div className="flex items-start gap-2">
+                <CalendarDays className="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
                     {formattedDate}
                   </p>
-                  <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium mt-1">
+                  <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium mt-0.5">
                     {getSelectedTimeLabel()}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3">
-                <Clock className="h-5 w-5 text-emerald-500 mt-0.5 flex-shrink-0" />
+              <div className="flex items-start gap-2">
+                <Clock className="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0" />
                 <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
                   {partySize} {parseInt(partySize) === 1 ? 'guest' : 'guests'}
                 </p>
@@ -529,8 +529,8 @@ export function ReservationForm({
           <Button
             variant="flat"
             radius="sm"
-            className="mb-5"
-            size="md"
+            className="mb-3"
+            size="sm"
             startContent={<Info className="h-4 w-4" />}
             onPress={goBackToDateTime}
           >
@@ -539,9 +539,9 @@ export function ReservationForm({
         </div>
 
         {/* Right side - Additional details */}
-        <div className="flex-1 space-y-5">
+        <div className="flex-1 space-y-4">
           <div>
-            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Number of Guests
             </h3>
             <Input
@@ -552,15 +552,16 @@ export function ReservationForm({
               onValueChange={handlePartySizeChange}
               radius="sm"
               variant="flat"
+              size="sm"
               classNames={{
-                inputWrapper: 'bg-gray-50/50 dark:bg-gray-800/30 shadow-sm h-[44px]',
+                inputWrapper: 'bg-gray-50/50 dark:bg-gray-800/30 shadow-sm h-[40px]',
                 input: 'text-sm',
               }}
             />
           </div>
 
           <div>
-            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Table Preference{' '}
               {filteredTables.length === 0
                 ? '(No tables available for this party size)'
@@ -571,10 +572,11 @@ export function ReservationForm({
               onSelectionChange={handleTableSelect}
               radius="sm"
               variant="flat"
+              size="sm"
               isDisabled={filteredTables.length === 0}
               placeholder="Select a table (optional)"
               classNames={{
-                trigger: 'bg-gray-50/50 dark:bg-gray-800/30 shadow-sm h-[44px]',
+                trigger: 'bg-gray-50/50 dark:bg-gray-800/30 shadow-sm h-[40px]',
                 value: 'text-sm',
               }}
             >
@@ -582,8 +584,8 @@ export function ReservationForm({
                 <SelectItem key={table.id}>{formatTableName(table)}</SelectItem>
               ))}
             </Select>
-            <p className="text-xs text-gray-500 mt-1.5">
-              <Info className="h-3.5 w-3.5 inline-block mr-1 align-text-bottom" />
+            <p className="text-xs text-gray-500 mt-1">
+              <Info className="h-3 w-3 inline-block mr-1 align-text-bottom" />
               Tables can be assigned or changed later
             </p>
           </div>
@@ -591,13 +593,13 @@ export function ReservationForm({
           {/* Automatic shift selection */}
           {!isLoadingShifts && shifts && shifts.length > 0 && getMatchingShift() && (
             <div>
-              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Shift</h3>
-              <div className="bg-gray-50/50 dark:bg-gray-800/30 rounded-md px-4 py-3 shadow-sm border border-gray-200">
+              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Shift</h3>
+              <div className="bg-gray-50/50 dark:bg-gray-800/30 rounded-md px-3 py-2 shadow-sm border border-gray-200">
                 <p className="text-sm">
                   <span className="font-medium">Automatic:</span>{' '}
                   {getMatchingShift()?.name} ({getMatchingShift()?.startTime}-{getMatchingShift()?.endTime})
                 </p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 mt-0.5">
                   <Info className="h-3 w-3 inline-block mr-1 align-text-bottom" />
                   Shift is automatically determined based on reservation time
                 </p>
@@ -606,15 +608,16 @@ export function ReservationForm({
           )}
 
           <div>
-            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Reservation Source
             </h3>
             <RadioGroup
               orientation="horizontal"
               value={source}
               onValueChange={handleSourceSelect}
+              size="sm"
               classNames={{
-                wrapper: 'gap-4',
+                wrapper: 'gap-3',
               }}
             >
               <Radio value={ReservationSource.PHONE}>Phone</Radio>
@@ -625,7 +628,7 @@ export function ReservationForm({
           </div>
 
           <div>
-            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Special Requests
             </h3>
             <Textarea
@@ -634,7 +637,8 @@ export function ReservationForm({
               onValueChange={setSpecialRequests}
               radius="sm"
               variant="flat"
-              rows={3}
+              rows={2}
+              size="sm"
               classNames={{
                 inputWrapper: 'bg-gray-50/50 dark:bg-gray-800/30 shadow-sm',
                 input: 'text-sm',
@@ -643,14 +647,14 @@ export function ReservationForm({
           </div>
 
           {dietaryRestrictions.length > 0 && (
-            <div className="bg-amber-50/60 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/20 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
+            <div className="bg-amber-50/60 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/20 rounded-lg p-3">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
                     Dietary Information
                   </p>
-                  <div className="mt-2 flex flex-wrap gap-1.5">
+                  <div className="mt-1.5 flex flex-wrap gap-1">
                     {dietaryRestrictions.map((restriction, index) => (
                       <Chip key={index} color="warning" variant="flat" radius="sm" size="sm">
                         {restriction}
@@ -658,7 +662,7 @@ export function ReservationForm({
                     ))}
                   </div>
                   {allergies && (
-                    <p className="text-xs text-amber-700 dark:text-amber-400 mt-2">
+                    <p className="text-xs text-amber-700 dark:text-amber-400 mt-1.5">
                       <span className="font-medium">Allergies:</span> {allergies}
                     </p>
                   )}
@@ -667,10 +671,11 @@ export function ReservationForm({
             </div>
           )}
 
-          <div className="flex gap-3 pt-3">
+          <div className="flex gap-3 pt-2">
             <Button
               variant="flat"
               radius="sm"
+              size="sm"
               className="flex-1"
               onPress={onCancel}
               disabled={isSubmitting}
@@ -680,6 +685,7 @@ export function ReservationForm({
             <Button
               color="success"
               radius="sm"
+              size="sm"
               className="flex-1 text-white"
               onPress={handleSubmit}
               isLoading={isSubmitting}

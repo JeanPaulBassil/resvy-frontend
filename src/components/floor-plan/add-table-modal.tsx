@@ -89,6 +89,36 @@ export default function AddTableModal({
   // Watch the status to update color when status changes
   const status = watch('status')
   
+  // Keyboard handling for iPad - Set CSS custom property for actual viewport height
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const setVh = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
+    
+    // Set initial value
+    setVh();
+    
+    // Listen for resize events
+    window.addEventListener('resize', setVh);
+    window.addEventListener('orientationchange', setVh);
+    
+    // Also listen for visual viewport changes (keyboard)
+    if ('visualViewport' in window) {
+      window.visualViewport?.addEventListener('resize', setVh);
+    }
+    
+    return () => {
+      window.removeEventListener('resize', setVh);
+      window.removeEventListener('orientationchange', setVh);
+      if ('visualViewport' in window) {
+        window.visualViewport?.removeEventListener('resize', setVh);
+      }
+    };
+  }, []);
+  
   // Initialize form when modal opens
   useEffect(() => {
     if (isOpen) {
@@ -169,147 +199,136 @@ export default function AddTableModal({
     <Modal 
       isOpen={isOpen} 
       onOpenChange={(open) => !open && handleClose()}
+      size="full"
       backdrop="blur"
-      size="md"
+      placement="top"
       scrollBehavior="inside"
+      classNames={{
+        base: "max-h-[calc(var(--vh,1vh)*90)]",
+        backdrop: "bg-black/40",
+        body: "py-4 px-4",
+        header: "py-3 px-4 border-b",
+        footer: "py-3 px-4 border-t"
+      }}
     >
-      <ModalContent className="bg-white">
-        <ModalHeader className="flex flex-col gap-1 border-b">
+      <ModalContent className="bg-white overflow-hidden flex flex-col max-h-[calc(var(--vh,1vh)*90)]">
+        <ModalHeader className="flex-shrink-0">
           <div className="flex items-center gap-2">
             <div className="bg-[#75CAA6]/10 p-1.5 rounded-md">
               <Icon icon="solar:table-2-linear" className="text-[#75CAA6]" width={20} />
             </div>
-            <h2 className="text-xl font-semibold">Add New Table</h2>
+            <h2 className="text-lg font-semibold">Add New Table</h2>
           </div>
         </ModalHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <ModalBody className="py-5">
-            <Tabs 
-              selectedKey={activeTab}
-              onSelectionChange={(key) => setActiveTab(key as string)}
-              color="primary"
-              variant="underlined"
-              classNames={{
-                tabList: "gap-6",
-                cursor: "bg-[#75CAA6]",
-                tab: "px-0 h-10 data-[selected=true]:text-[#75CAA6] font-medium",
-              }}
-            >
-              <Tab 
-                key="basic" 
-                title={
-                  <div className="flex items-center gap-2">
-                    <Icon icon="solar:settings-linear" width={18} />
-                    <span>Basic Info</span>
-                  </div>
-                }
-              >
-                <div className="mt-4 space-y-5">
-                  <div className="space-y-2">
-                    <div className="text-sm font-medium">Table Name</div>
-                    <Controller
-                      name="name"
-                      control={control}
-                      render={({ field, fieldState }) => (
-                        <div>
-                          <Input 
-                            {...field}
-                            placeholder="Enter table name"
-                            className={`border-gray-300 ${fieldState.error ? 'border-red-500' : ''}`}
-                            startContent={<Icon icon="solar:pen-linear" width={16} className="text-gray-500" />}
-                            isInvalid={!!fieldState.error}
-                          />
-                          {fieldState.error && (
-                            <div className="text-xs text-red-500 mt-1">{fieldState.error.message}</div>
-                          )}
-                        </div>
-                      )}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="text-sm font-medium">Seating Capacity</div>
-                    <div className="flex items-center gap-3">
-                      <Controller
-                        name="capacity"
-                        control={control}
-                        render={({ field: { onChange, value }, fieldState }) => (
-                          <div className="w-full">
-                            <div className="flex items-center gap-3">
-                              <Slider
-                                size="sm"
-                                step={1}
-                                minValue={1}
-                                maxValue={12}
-                                value={value}
-                                onChange={onChange}
-                                className={`flex-1 ${fieldState.error ? 'border-red-500' : ''}`}
-                                color="primary"
-                              />
-                              <div className="w-12 h-9 bg-gray-100 rounded-md flex items-center justify-center text-sm font-medium">
-                                {value}
-                              </div>
-                            </div>
-                            {fieldState.error && (
-                              <div className="text-xs text-red-500 mt-1">{fieldState.error.message}</div>
-                            )}
-                          </div>
-                        )}
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0">
+          <ModalBody className="flex-1 overflow-y-auto py-3">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div className="text-sm font-medium">Table Name</div>
+                <Controller
+                  name="name"
+                  control={control}
+                  render={({ field, fieldState }) => (
+                    <div>
+                      <Input 
+                        {...field}
+                        placeholder="Enter table name"
+                        className={`border-gray-300 ${fieldState.error ? 'border-red-500' : ''}`}
+                        startContent={<Icon icon="solar:pen-linear" width={16} className="text-gray-500" />}
+                        isInvalid={!!fieldState.error}
+                        size="sm"
                       />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="text-sm font-medium">Table Status</div>
-                    <Controller
-                      name="status"
-                      control={control}
-                      render={({ field: { onChange, value }, fieldState }) => (
-                        <div>
-                          <Select 
-                            selectedKeys={[getTableStatusString(value)]}
-                            onChange={(e) => onChange(getTableStatusEnum(e.target.value))}
-                            className={`border-gray-300 ${fieldState.error ? 'border-red-500' : ''}`}
-                            isInvalid={!!fieldState.error}
-                          >
-                            <SelectItem 
-                              key={TableStatus[TableStatus.AVAILABLE]} 
-                              startContent={<div className="w-2 h-2 rounded-full bg-green-500 mr-1"></div>}
-                            >
-                              Available
-                            </SelectItem>
-                            <SelectItem 
-                              key={TableStatus[TableStatus.OCCUPIED]} 
-                              startContent={<div className="w-2 h-2 rounded-full bg-red-500 mr-1"></div>}
-                            >
-                              Occupied
-                            </SelectItem>
-                            <SelectItem 
-                              key={TableStatus[TableStatus.RESERVED]} 
-                              startContent={<div className="w-2 h-2 rounded-full bg-blue-500 mr-1"></div>}
-                            >
-                              Reserved
-                            </SelectItem>
-                          </Select>
-                          {fieldState.error && (
-                            <div className="text-xs text-red-500 mt-1">{fieldState.error.message}</div>
-                          )}
-                        </div>
+                      {fieldState.error && (
+                        <div className="text-xs text-red-500 mt-1">{fieldState.error.message}</div>
                       )}
-                    />
-                  </div>
+                    </div>
+                  )}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-sm font-medium">Seating Capacity</div>
+                <div className="flex items-center gap-3">
+                  <Controller
+                    name="capacity"
+                    control={control}
+                    render={({ field: { onChange, value }, fieldState }) => (
+                      <div className="w-full">
+                        <div className="flex items-center gap-3">
+                          <Slider
+                            size="sm"
+                            step={1}
+                            minValue={1}
+                            maxValue={12}
+                            value={value}
+                            onChange={onChange}
+                            className={`flex-1 ${fieldState.error ? 'border-red-500' : ''}`}
+                            color="primary"
+                          />
+                          <div className="w-12 h-8 bg-gray-100 rounded-md flex items-center justify-center text-sm font-medium">
+                            {value}
+                          </div>
+                        </div>
+                        {fieldState.error && (
+                          <div className="text-xs text-red-500 mt-1">{fieldState.error.message}</div>
+                        )}
+                      </div>
+                    )}
+                  />
                 </div>
-              </Tab>
-            </Tabs>
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-sm font-medium">Table Status</div>
+                <Controller
+                  name="status"
+                  control={control}
+                  render={({ field: { onChange, value }, fieldState }) => (
+                    <div>
+                      <Select 
+                        selectedKeys={[getTableStatusString(value)]}
+                        onChange={(e) => onChange(getTableStatusEnum(e.target.value))}
+                        className={`border-gray-300 ${fieldState.error ? 'border-red-500' : ''}`}
+                        isInvalid={!!fieldState.error}
+                        size="sm"
+                      >
+                        <SelectItem 
+                          key={TableStatus[TableStatus.AVAILABLE]} 
+                          startContent={<div className="w-2 h-2 rounded-full bg-green-500 mr-1"></div>}
+                        >
+                          Available
+                        </SelectItem>
+                        <SelectItem 
+                          key={TableStatus[TableStatus.OCCUPIED]} 
+                          startContent={<div className="w-2 h-2 rounded-full bg-red-500 mr-1"></div>}
+                        >
+                          Occupied
+                        </SelectItem>
+                        <SelectItem 
+                          key={TableStatus[TableStatus.RESERVED]} 
+                          startContent={<div className="w-2 h-2 rounded-full bg-blue-500 mr-1"></div>}
+                        >
+                          Reserved
+                        </SelectItem>
+                      </Select>
+                      {fieldState.error && (
+                        <div className="text-xs text-red-500 mt-1">{fieldState.error.message}</div>
+                      )}
+                    </div>
+                  )}
+                />
+              </div>
+            </div>
           </ModalBody>
 
-          <ModalFooter className="border-t">
+          <ModalFooter className="flex-shrink-0 gap-2">
             <Button 
               variant="flat" 
               onClick={handleClose}
               className="bg-white border border-gray-200"
               type="button"
+              size="sm"
             >
               Cancel
             </Button>
@@ -319,6 +338,7 @@ export default function AddTableModal({
               className="bg-[#75CAA6]"
               isLoading={createTableMutation.isPending}
               isDisabled={!isValid}
+              size="sm"
             >
               Create Table
             </Button>

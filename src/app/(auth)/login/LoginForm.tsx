@@ -1,15 +1,15 @@
 'use client';
 
-import { Button, Checkbox, Form, Link, Alert } from '@heroui/react';
+import { Alert, Button, Form } from '@heroui/react';
 import { useRouter } from 'next/navigation';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { AuthCard } from '@/components/auth/AuthCard';
 import { InputField } from '@/components/forms/InputField';
 import { InputPasswordField } from '@/components/forms/InputPasswordField';
 import { useLoginForm } from '@/hooks/forms/useLoginForm';
 import { useAuthState } from '@/hooks/useAuthState';
-import { signIn, signInWithGoogle } from '@/services/authService';
+import { signIn } from '@/services/authService';
 import { handleAuthError } from '@/utils/firebaseErrors';
 
 interface LoginFormProps {
@@ -17,7 +17,7 @@ interface LoginFormProps {
 }
 
 export default function LoginForm({ reason }: LoginFormProps) {
-  const { state, startEmailLoading, startGoogleLoading, stopAllLoading, setError } = useAuthState();
+  const { state, startEmailLoading, stopAllLoading, setError } = useAuthState();
 
   const {
     register,
@@ -27,7 +27,6 @@ export default function LoginForm({ reason }: LoginFormProps) {
     clearErrors,
   } = useLoginForm();
   const router = useRouter();
-  const [rememberMe, setRememberMe] = useState(false);
   const [formInitialized, setFormInitialized] = useState(false);
 
   // Handle browser autofill with improved approach
@@ -91,10 +90,13 @@ export default function LoginForm({ reason }: LoginFormProps) {
   async function onSubmit(data: { email: string; password: string }) {
     startEmailLoading();
     try {
-      const userData = await signIn(data.email, data.password, rememberMe);
+      const userData = await signIn(data.email, data.password, false);
       // Check if user is admin and redirect to clients page instead of home
-      if (userData?.role === 'ADMIN' || userData?.user?.role === 'ADMIN' || 
-          (userData?.payload?.user?.role === 'ADMIN')) {
+      if (
+        userData?.role === 'ADMIN' ||
+        userData?.user?.role === 'ADMIN' ||
+        userData?.payload?.user?.role === 'ADMIN'
+      ) {
         router.replace('/admin/clients');
       } else {
         router.replace('/dashboard');
@@ -109,33 +111,11 @@ export default function LoginForm({ reason }: LoginFormProps) {
     }
   }
 
-  const handleGoogleLogin = async () => {
-    startGoogleLoading();
-    try {
-      const userData = await signInWithGoogle();
-      // Check if user is admin and redirect to clients page instead of home
-      if (userData?.role === 'ADMIN' || userData?.user?.role === 'ADMIN' || 
-          (userData?.payload?.user?.role === 'ADMIN')) {
-        router.replace('/admin/clients');
-      } else {
-        router.replace('/dashboard');
-      }
-    } catch (err) {
-      if (err instanceof Error && err.message === 'UNAUTHORIZED_EMAIL') {
-        return;
-      }
-      setError(handleAuthError(err));
-    } finally {
-      stopAllLoading();
-    }
-  };
-
   return (
     <AuthCard
       title="Log In"
       error={state.error}
-      loading={state.googleLoading}
-      onGoogleClick={handleGoogleLogin}
+      loading={state.emailLoading}
       footerText="Need to create an account?"
       footerLinkText="Sign Up"
       footerLinkHref="/signup"
@@ -145,10 +125,7 @@ export default function LoginForm({ reason }: LoginFormProps) {
           {reasonMessage}
         </Alert>
       )}
-      <Form 
-        className="flex flex-col gap-3" 
-        onSubmit={handleSubmit(onSubmit)}
-      >
+      <Form className="flex flex-col gap-3" onSubmit={handleSubmit(onSubmit)}>
         <InputField
           {...register('email')}
           isRequired
@@ -169,20 +146,12 @@ export default function LoginForm({ reason }: LoginFormProps) {
           autoComplete="current-password"
         />
 
-        <div className="flex w-full items-center justify-between px-1 py-2">
-          <Checkbox name="remember" size="sm" isSelected={rememberMe} onValueChange={setRememberMe}>
-            Remember me
-          </Checkbox>
-          <Link className="text-default-500" href="#" size="sm">
-            Forgot password?
-          </Link>
-        </div>
         <Button
           className="w-full"
           color="primary"
           type="submit"
           isLoading={state.emailLoading}
-          disabled={state.emailLoading || state.googleLoading || !formInitialized}
+          disabled={state.emailLoading || !formInitialized}
         >
           Log In
         </Button>

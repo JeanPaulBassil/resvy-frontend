@@ -9,11 +9,13 @@ import FloorPlan from "./floor-plan"
 import TableListView from "./table-list-view"
 import TableDetailsModal from "./table-details-modal"
 import FloorSelector from "./floor-selector"
-import { useFloors, useCreateFloor, useUpdateFloor, useDeleteFloor } from '@/hooks/useFloor'
+import { useFloors, useCreateFloor, useDeleteFloor, floorKeys } from '@/hooks/useFloor'
 import { useTables, useUpdateTable, useDeleteTable, useUpdateTablePosition, useUpdateTableStatus, useMergeTables, useUnmergeTables, tableKeys } from '@/hooks/useTable'
 import AddTableModal from "./add-table-modal"
 import { useQueryClient } from "@tanstack/react-query"
 import MergeTablesModal from "./merge-tables-modal"
+import { floorApi } from '@/api/floor'
+import { useToast } from '@/contexts/ToastContext'
 
 export interface FloorPlanManagerProps {
   restaurantId: string;
@@ -41,8 +43,9 @@ export default function FloorPlanManager({ restaurantId }: FloorPlanManagerProps
   const { data: floors = [], isLoading: isLoadingFloors } = useFloors(restaurantId)
   const [activeFloorId, setActiveFloorId] = useState<string>("")
   const createFloorMutation = useCreateFloor(restaurantId)
-  const updateFloorMutation = useUpdateFloor(activeFloorId, restaurantId)
   const deleteFloorMutation = useDeleteFloor(restaurantId)
+  const queryClient = useQueryClient()
+  const toast = useToast()
   
   // Use React Query hooks for tables
   const { data: tables = [], isLoading: isLoadingTables } = useTables(restaurantId, activeFloorId)
@@ -59,9 +62,6 @@ export default function FloorPlanManager({ restaurantId }: FloorPlanManagerProps
   
   // Local state for optimistic table positions
   const [localTablePositions, setLocalTablePositions] = useState<Record<string, { x: number, y: number }>>({})
-  
-  // Get the query client for manual cache updates
-  const queryClient = useQueryClient();
   
   // Initialize floors from backend data when available
   useEffect(() => {
@@ -318,15 +318,30 @@ export default function FloorPlanManager({ restaurantId }: FloorPlanManagerProps
     )
   }
 
-  const handleUpdateFloor = (updatedFloor: Floor) => {
-    // Update floor in the backend
-    const updateFloorDto = {
-      name: updatedFloor.name,
-      type: updatedFloor.type,
-      color: updatedFloor.color
+  const handleUpdateFloor = async (updatedFloor: Floor) => {
+    try {
+      // Update floor in the backend
+      const updateFloorDto = {
+        name: updatedFloor.name,
+        type: updatedFloor.type,
+        color: updatedFloor.color
+      }
+      
+      await floorApi.updateFloor(updatedFloor.id, updateFloorDto, restaurantId)
+      
+      // Update the cache manually
+      queryClient.setQueryData(floorKeys.list(restaurantId), (oldFloors: Floor[] | undefined) => {
+        if (!oldFloors) return oldFloors
+        return oldFloors.map(floor => 
+          floor.id === updatedFloor.id ? { ...floor, ...updateFloorDto } : floor
+        )
+      })
+      
+      toast.success('Floor updated successfully')
+    } catch (error) {
+      console.error('Error updating floor:', error)
+      toast.error('Failed to update floor')
     }
-    
-    updateFloorMutation.mutate(updateFloorDto)
   }
 
   const handleDeleteFloor = (floorId: string) => {

@@ -1,19 +1,19 @@
 'use client';
 
-import React from 'react';
-import AppWrapper from '@/components/sidebar';
-import { SidebarProvider } from '@/components/providers/SidebarProvider';
 import { useRestaurant } from '@/components/providers/RestaurantProvider';
+import { SidebarProvider } from '@/components/providers/SidebarProvider';
+import AppWrapper from '@/components/sidebar';
 import { Skeleton } from '@heroui/react';
+import React from 'react';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const { isLoading } = useRestaurant();
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen overflow-hidden">
+      <div className="flex h-[100dvh] overflow-hidden">
         <AppWrapper />
-        <main className="flex-1 overflow-y-auto transition-all duration-300 ease-in-out">
+        <main className="flex-1 overflow-y-auto transition-all duration-300 ease-in-out transform-gpu w-full">
           {isLoading ? (
             <div className="p-4 md:p-6 max-w-[1600px] mx-auto h-full">
               <div className="bg-white rounded-xl shadow-sm h-full p-6">
@@ -22,7 +22,18 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                   <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center">
                       <div className="w-10 h-10 rounded-full bg-[#75CAA6]/20 flex items-center justify-center animate-pulse">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#75CAA6]/50">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="text-[#75CAA6]/50"
+                        >
                           <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"></path>
                           <path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"></path>
                           <path d="M12 3v6"></path>
@@ -68,18 +79,21 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                       <div className="absolute inset-0 rounded-full border-2 border-[#75CAA6]/20"></div>
                       <div className="absolute inset-0 rounded-full border-t-2 border-[#75CAA6] animate-spin"></div>
                       <div className="absolute inset-2 rounded-full bg-[#75CAA6]/10 animate-pulse"></div>
-                      <div className="absolute inset-4 rounded-full bg-[#75CAA6]/20 animate-pulse" style={{ animationDelay: "0.3s" }}></div>
+                      <div
+                        className="absolute inset-4 rounded-full bg-[#75CAA6]/20 animate-pulse"
+                        style={{ animationDelay: '0.3s' }}
+                      ></div>
                     </div>
                     <p className="text-sm font-medium text-gray-600">Loading restaurant data</p>
-                    <p className="text-xs text-gray-500 mt-1">Please wait while we set up your workspace</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Please wait while we set up your workspace
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="h-full overflow-auto">
-              {children}
-            </div>
+            <div className="h-full">{children}</div>
           )}
         </main>
       </div>

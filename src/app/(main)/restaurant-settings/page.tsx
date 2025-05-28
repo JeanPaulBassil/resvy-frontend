@@ -108,6 +108,28 @@ export default function RestaurantSettingsPage() {
     setHasUnsavedChanges(isSettingsDirty);
   }, [isSettingsDirty]);
 
+  // Handle viewport height changes for iOS keyboard
+  useEffect(() => {
+    const handleViewportChange = () => {
+      // Set CSS custom property for actual viewport height
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
+
+    // Set initial value
+    handleViewportChange();
+
+    // Listen for resize events (keyboard show/hide)
+    window.addEventListener('resize', handleViewportChange);
+    window.addEventListener('orientationchange', handleViewportChange);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('resize', handleViewportChange);
+      window.removeEventListener('orientationchange', handleViewportChange);
+    };
+  }, []);
+
   // Handle form submission for updating restaurant settings
   const onSubmitSettings = (data: RestaurantSettingsSchema) => {
     if (!currentRestaurant) return;
@@ -446,39 +468,7 @@ export default function RestaurantSettingsPage() {
                         </Card>
                       </motion.div>
                       
-                      <motion.div variants={itemVariants}>
-                        {/* Danger Zone */}
-                        <Card className="mb-6 shadow-sm border border-danger-200 dark:border-danger-900/50">
-                          <CardHeader className="flex justify-between bg-danger-50 dark:bg-danger-900/20">
-                            <div className="flex items-center gap-2">
-                              <div className="p-2 bg-danger-100 dark:bg-danger-900/30 rounded-lg">
-                                <Icon icon="solar:danger-triangle-bold-duotone" className="text-danger w-5 h-5" />
-                              </div>
-                              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Danger Zone</h3>
-                            </div>
-                          </CardHeader>
-                          <CardBody className="gap-4">
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-3 border border-danger-100 dark:border-danger-800/30 rounded-lg">
-                              <div>
-                                <h4 className="text-base font-medium text-gray-800 dark:text-gray-100">Delete Restaurant</h4>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                  Once you delete your restaurant, there is no going back. Please be certain.
-                                </p>
-                              </div>
-                              <Button 
-                                color="danger" 
-                                variant="flat"
-                                onPress={onOpenDeleteModal}
-                                startContent={<Icon icon="solar:trash-bin-trash-bold-duotone" className="text-lg" />}
-                              >
-                                Delete Restaurant
-                              </Button>
-                            </div>
-                          </CardBody>
-                        </Card>
-                      </motion.div>
-                      
-                      <motion.div variants={itemVariants} className="flex justify-end mt-4">
+                      <motion.div variants={itemVariants} className="flex justify-end mb-6">
                         <div className="flex gap-3">
                           <Button
                             type="button"
@@ -519,6 +509,39 @@ export default function RestaurantSettingsPage() {
                           </Button>
                         </div>
                       </motion.div>
+                      
+                      <motion.div variants={itemVariants}>
+                        {/* Danger Zone */}
+                        <Card className="mb-6 shadow-sm border border-danger-200 dark:border-danger-900/50">
+                          <CardHeader className="flex justify-between bg-danger-50 dark:bg-danger-900/20">
+                            <div className="flex items-center gap-2">
+                              <div className="p-2 bg-danger-100 dark:bg-danger-900/30 rounded-lg">
+                                <Icon icon="solar:danger-triangle-bold-duotone" className="text-danger w-5 h-5" />
+                              </div>
+                              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Danger Zone</h3>
+                            </div>
+                          </CardHeader>
+                          <CardBody className="gap-4">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-3 border border-danger-100 dark:border-danger-800/30 rounded-lg">
+                              <div>
+                                <h4 className="text-base font-medium text-gray-800 dark:text-gray-100">Delete Restaurant</h4>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                  Once you delete your restaurant, there is no going back. Please be certain.
+                                </p>
+                              </div>
+                              <Button 
+                                color="danger" 
+                                variant="flat"
+                                onPress={onOpenDeleteModal}
+                                startContent={<Icon icon="solar:trash-bin-trash-bold-duotone" className="text-lg" />}
+                              >
+                                Delete Restaurant
+                              </Button>
+                            </div>
+                          </CardBody>
+                        </Card>
+                      </motion.div>
+                      
                     </motion.div>
                   </form>
                 )}
@@ -640,31 +663,57 @@ export default function RestaurantSettingsPage() {
       <Modal 
         isOpen={isDeleteModalOpen} 
         onClose={onCloseDeleteModal}
+        placement="top"
+        scrollBehavior="inside"
+        size="md"
         classNames={{
           backdrop: "bg-red-900/10 backdrop-blur-sm",
+          wrapper: "items-start justify-center pt-4 pb-4 px-4",
+          base: "my-0 mx-auto max-h-[calc(var(--vh,1vh)*80)] min-h-0",
+        }}
+        motionProps={{
+          variants: {
+            enter: {
+              y: 0,
+              opacity: 1,
+              transition: {
+                duration: 0.3,
+                ease: "easeOut",
+              },
+            },
+            exit: {
+              y: -20,
+              opacity: 0,
+              transition: {
+                duration: 0.2,
+                ease: "easeIn",
+              },
+            },
+          },
         }}
       >
-        <ModalContent>
-          <form onSubmit={handleSubmitDelete(onSubmitDelete)}>
-            <ModalHeader className="flex flex-col gap-1">
+        <ModalContent className="overflow-hidden">
+          <form onSubmit={handleSubmitDelete(onSubmitDelete)} className="flex flex-col h-full">
+            <ModalHeader className="flex flex-col gap-1 flex-shrink-0 pb-3">
               <div className="flex items-center gap-2">
                 <Icon icon="solar:danger-triangle-bold-duotone" className="text-red-500 text-xl" />
                 <span className="text-red-600">Delete Restaurant</span>
               </div>
             </ModalHeader>
-            <ModalBody>
-              <div className="bg-red-50 dark:bg-red-900/10 rounded-lg p-4 mb-4 border border-red-100 dark:border-red-800/20">
-                <p className="text-red-600 dark:text-red-300 font-medium">
+            <ModalBody className="flex-1 overflow-y-auto px-6 py-0">
+              <div className="bg-red-50 dark:bg-red-900/10 rounded-lg p-3 mb-3 border border-red-100 dark:border-red-800/20">
+                <p className="text-red-600 dark:text-red-300 font-medium text-sm">
                   This action <span className="font-bold">cannot</span> be undone. 
                 </p>
               </div>
-              <p className="text-gray-700 dark:text-gray-300 mb-4">
+              <p className="text-gray-700 dark:text-gray-300 mb-3 text-sm">
                 This will permanently delete your restaurant <span className="font-semibold">{currentRestaurant?.name}</span>, all its 
                 associated data, including floor plans, tables, shifts, reservations, and guest records.
               </p>
-              <p className="text-gray-700 dark:text-gray-300 mb-4">
+              <p className="text-gray-700 dark:text-gray-300 mb-4 text-sm">
                 Please type <span className="font-bold">{currentRestaurant?.name}</span> to confirm.
               </p>
+              <div className="pb-2">
               <Input
                 placeholder={`Type "${currentRestaurant?.name}" to confirm`}
                 {...registerDelete('confirmationName')}
@@ -673,14 +722,19 @@ export default function RestaurantSettingsPage() {
                 color={canDelete ? "danger" : "default"}
                 classNames={{
                   inputWrapper: "shadow-sm",
+                    input: "text-sm",
                 }}
+                  autoFocus={false}
+                  size="sm"
               />
+              </div>
             </ModalBody>
-            <ModalFooter>
+            <ModalFooter className="flex-shrink-0 pt-3">
               <Button
                 color="default"
                 variant="light"
                 onPress={onCloseDeleteModal}
+                size="sm"
               >
                 Cancel
               </Button>
@@ -690,6 +744,7 @@ export default function RestaurantSettingsPage() {
                 isDisabled={!canDelete}
                 isLoading={isDeleting}
                 startContent={<Icon icon="solar:trash-bin-trash-bold-duotone" className="text-lg" />}
+                size="sm"
               >
                 Delete Restaurant
               </Button>

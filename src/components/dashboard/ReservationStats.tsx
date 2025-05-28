@@ -259,165 +259,298 @@ export default function ReservationStats() {
   }
 
   return (
-    <div className="w-full">
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center gap-3 mb-6">
-          <Avatar
-            name={username}
-            size="lg"
-            className="bg-primary-100 text-primary-500"
-            src={user?.photoURL || undefined}
-          />
-          <div>
-            <h1 className="text-2xl font-semibold">Welcome, {username}</h1>
-            <p className="text-default-500">Restaurant Manager</p>
+    <div className="w-full h-full overflow-hidden">
+      <div className="h-full overflow-y-auto overflow-x-hidden">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 px-4">
+          <div className="flex items-center gap-3">
+            <Avatar
+              name={username}
+              size="lg"
+              className="bg-primary-100 text-primary-500"
+              src={user?.photoURL || undefined}
+            />
+            <div>
+              <h1 className="text-xl md:text-2xl font-semibold">Welcome, {username}</h1>
+              <p className="text-default-500 text-sm">Restaurant Manager</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            {/* Command Menu Dropdown */}
+            <Dropdown placement="bottom-end" radius="sm">
+              <DropdownTrigger>
+                <Button
+                  variant="flat"
+                  color="success"
+                  endContent={<Icon icon="solar:alt-arrow-down-bold" width={16} />}
+                  startContent={<Icon icon="solar:command-square-bold" width={18} />}
+                  radius="sm"
+                  size="sm"
+                >
+                  Quick Actions
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu aria-label="Quick Actions" className="min-w-[240px]">
+                <DropdownItem
+                  key="new-reservation"
+                  description="Create a new reservation"
+                  startContent={
+                    <Icon icon="solar:calendar-add-bold" className="text-primary-500" width={20} />
+                  }
+                  onPress={() => setIsAddReservationModalOpen(true)}
+                >
+                  Add New Reservation
+                </DropdownItem>
+                
+                <DropdownItem
+                  key="table-assignment"
+                  description="Assign tables to reservations"
+                  startContent={
+                    <Icon icon="mdi:table-furniture" className="text-success-500" width={20} />
+                  }
+                  onPress={() => setIsTableAssignmentModalOpen(true)}
+                >
+                  Table Assignment
+                </DropdownItem>
+                
+                <DropdownItem
+                  key="add-guest"
+                  description="Add a new guest to the system"
+                  startContent={
+                    <Icon icon="solar:user-plus-bold" className="text-warning-500" width={20} />
+                  }
+                  onPress={() => setIsAddGuestModalOpen(true)}
+                >
+                  Add New Guest
+                </DropdownItem>
+                
+                <DropdownItem
+                  key="today-view"
+                  description="View all of today's reservations"
+                  startContent={
+                    <Icon icon="solar:list-bold" className="text-default-500" width={20} />
+                  }
+                  as={Link}
+                  href="/reservations"
+                >
+                  Today's Reservations
+                </DropdownItem>
+                
+                <DropdownItem
+                  key="floor-plan"
+                  description="View and manage your restaurant floor plan"
+                  startContent={
+                    <Icon icon="mdi:floor-plan" className="text-indigo-500" width={20} />
+                  }
+                  as={Link}
+                  href="/floor-plan"
+                >
+                  Floor Plans
+                </DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
+
+            {currentShift && (
+              <>
+                <Badge color="primary" content={currentShift.active ? "Active" : "Inactive"} placement="top-right">
+                  <Icon className="text-primary-500" icon="mdi:account-group" width={20} />
+                </Badge>
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-default-600">
+                    Current Shift: {currentShift.name}
+                  </span>
+                  <span className="text-xs text-default-400">
+                    {formatShiftTime(currentShift.startTime)} - {formatShiftTime(currentShift.endTime)}
+                  </span>
+                </div>
+              </>
+            )}
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          {/* Command Menu Dropdown */}
-          <Dropdown placement="bottom-end" radius="sm">
-            <DropdownTrigger>
-              <Button
-                variant="flat"
-                color="success"
-                endContent={<Icon icon="solar:alt-arrow-down-bold" width={16} />}
-                startContent={<Icon icon="solar:command-square-bold" width={18} />}
-                radius="sm"
-              >
-                Quick Actions
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu aria-label="Quick Actions" className="min-w-[240px]">
-              <DropdownItem
-                key="new-reservation"
-                description="Create a new reservation"
-                startContent={
-                  <Icon icon="solar:calendar-add-bold" className="text-primary-500" width={20} />
-                }
-                onPress={() => setIsAddReservationModalOpen(true)}
-              >
-                Add New Reservation
-              </DropdownItem>
-              
-              <DropdownItem
-                key="table-assignment"
-                description="Assign tables to reservations"
-                startContent={
-                  <Icon icon="mdi:table-furniture" className="text-success-500" width={20} />
-                }
-                onPress={() => setIsTableAssignmentModalOpen(true)}
-              >
-                Table Assignment
-              </DropdownItem>
-              
-              <DropdownItem
-                key="add-guest"
-                description="Add a new guest to the system"
-                startContent={
-                  <Icon icon="solar:user-plus-bold" className="text-warning-500" width={20} />
-                }
-                onPress={() => setIsAddGuestModalOpen(true)}
-              >
-                Add New Guest
-              </DropdownItem>
-              
-              <DropdownItem
-                key="today-view"
-                description="View all of today's reservations"
-                startContent={
-                  <Icon icon="solar:list-bold" className="text-default-500" width={20} />
-                }
-                as={Link}
-                href="/reservations"
-              >
-                Today's Reservations
-              </DropdownItem>
-              
-              <DropdownItem
-                key="floor-plan"
-                description="View and manage your restaurant floor plan"
-                startContent={
-                  <Icon icon="mdi:floor-plan" className="text-indigo-500" width={20} />
-                }
-                as={Link}
-                href="/floor-plan"
-              >
-                Floor Plans
-              </DropdownItem>
-            </DropdownMenu>
-          </Dropdown>
 
-          {currentShift && (
-            <>
-              <Badge color="primary" content={currentShift.active ? "Active" : "Inactive"} placement="top-right">
-                <Icon className="text-primary-500" icon="mdi:account-group" width={20} />
-              </Badge>
-              <div className="flex flex-col">
-                <span className="text-sm font-medium text-default-600">
-                  Current Shift: {currentShift.name}
-                </span>
-                <span className="text-xs text-default-400">
-                  {formatShiftTime(currentShift.startTime)} - {formatShiftTime(currentShift.endTime)}
-                </span>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Reservation KPIs with charts and Table Availability */}
-      <dl className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 mb-6">
-        {/* Today's Reservations Card */}
-        <Card className="dark:border-default-100">
-          <section className="flex flex-col flex-nowrap">
-            <div className="flex flex-col justify-between gap-y-2 px-4 pt-4">
-              <div className="flex flex-col gap-y-2">
-                <div className="flex flex-col gap-y-0">
-                  <dt className="text-sm font-medium text-default-600">Today's Reservations</dt>
-                  <dt className="text-tiny font-normal text-default-400">Total bookings for today</dt>
+        {/* Reservation KPIs with charts and Table Availability */}
+        <dl className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-4 px-4">
+          {/* Today's Reservations Card */}
+          <Card className="dark:border-default-100">
+            <section className="flex flex-col flex-nowrap">
+              <div className="flex flex-col justify-between gap-y-2 px-3 pt-3">
+                <div className="flex flex-col gap-y-2">
+                  <div className="flex flex-col gap-y-0">
+                    <dt className="text-sm font-medium text-default-600">Today's Reservations</dt>
+                    <dt className="text-tiny font-normal text-default-400">Total bookings for today</dt>
+                  </div>
+                  <div className="flex items-baseline gap-x-2">
+                    <dd className="text-lg font-semibold text-default-700">{todayStats.total}</dd>
+                    <Chip
+                      classNames={{
+                        content: 'font-medium text-xs',
+                      }}
+                      color="success"
+                      radius="sm"
+                      size="sm"
+                      startContent={<Icon height={14} icon={'solar:arrow-right-up-linear'} width={14} />}
+                      variant="flat"
+                    >
+                      <span>{todayStats.allConfirmedCount} confirmed+</span>
+                    </Chip>
+                  </div>
                 </div>
-                <div className="flex items-baseline gap-x-2">
-                  <dd className="text-xl font-semibold text-default-700">{todayStats.total}</dd>
-                  <Chip
-                    classNames={{
-                      content: 'font-medium',
-                    }}
-                    color="success"
-                    radius="sm"
-                    size="sm"
-                    startContent={<Icon height={16} icon={'solar:arrow-right-up-linear'} width={16} />}
-                    variant="flat"
+              </div>
+              <div className="min-h-20 w-full">
+                <ResponsiveContainer className="[&_.recharts-surface]:outline-none">
+                  <AreaChart
+                    accessibilityLayer
+                    className="translate-y-1 scale-105"
+                    data={weeklyReservationData}
                   >
-                    <span>{todayStats.allConfirmedCount} confirmed+</span>
-                  </Chip>
+                    <defs>
+                      <linearGradient id={'colorUv0'} x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="10%" stopColor="hsl(var(--heroui-success))" stopOpacity={0.3} />
+                        <stop offset="100%" stopColor="hsl(var(--heroui-success))" stopOpacity={0.1} />
+                      </linearGradient>
+                    </defs>
+                    <YAxis
+                      domain={[0, 'auto']}
+                      hide={true}
+                    />
+                    <Area
+                      dataKey="reservationCount"
+                      fill={'url(#colorUv0)'}
+                      stroke={'hsl(var(--heroui-success))'}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+              <Dropdown
+                classNames={{
+                  content: 'min-w-[120px]',
+                }}
+                placement="bottom-end"
+              >
+                <DropdownTrigger>
+                  <Button
+                    isIconOnly
+                    className="absolute right-2 top-2 w-auto rounded-full"
+                    size="sm"
+                    variant="light"
+                  >
+                    <Icon height={16} icon="solar:menu-dots-bold" width={16} />
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu
+                  itemClasses={{
+                    title: 'text-tiny',
+                  }}
+                  variant="flat"
+                >
+                  <DropdownItem key="view-details" as={Link} href="/reservations">View All Reservations</DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
+            </section>
+          </Card>
+          
+          {/* Guest Count Card */}
+          <Card className="dark:border-default-100">
+            <section className="flex flex-col flex-nowrap">
+              <div className="flex flex-col justify-between gap-y-2 px-3 pt-3">
+                <div className="flex flex-col gap-y-2">
+                  <div className="flex flex-col gap-y-0">
+                    <dt className="text-sm font-medium text-default-600">Guest Count</dt>
+                    <dt className="text-tiny font-normal text-default-400">Total guests today</dt>
+                  </div>
+                  <div className="flex items-baseline gap-x-2">
+                    <dd className="text-lg font-semibold text-default-700">
+                      {weeklyReservationData.length > 0 
+                        ? weeklyReservationData[weeklyReservationData.length - 1].guestCount 
+                        : 0}
+                    </dd>
+                    <Chip
+                      classNames={{
+                        content: 'font-medium text-xs',
+                      }}
+                      color="primary"
+                      radius="sm"
+                      size="sm"
+                      startContent={<Icon height={14} icon={'solar:arrow-right-up-linear'} width={14} />}
+                      variant="flat"
+                    >
+                      <span>{todayStats.seatedCount} seated</span>
+                    </Chip>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="min-h-24 w-full">
-              <ResponsiveContainer className="[&_.recharts-surface]:outline-none">
-                <AreaChart
-                  accessibilityLayer
-                  className="translate-y-1 scale-105"
-                  data={weeklyReservationData}
+              <div className="min-h-20 w-full">
+                <ResponsiveContainer className="[&_.recharts-surface]:outline-none">
+                  <AreaChart
+                    accessibilityLayer
+                    className="translate-y-1 scale-105"
+                    data={weeklyReservationData}
+                  >
+                    <defs>
+                      <linearGradient id={'colorUv1'} x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="10%" stopColor="hsl(var(--heroui-primary))" stopOpacity={0.3} />
+                        <stop offset="100%" stopColor="hsl(var(--heroui-primary))" stopOpacity={0.1} />
+                      </linearGradient>
+                    </defs>
+                    <YAxis
+                      domain={[0, 'auto']}
+                      hide={true}
+                    />
+                    <Area
+                      dataKey="guestCount"
+                      fill={'url(#colorUv1)'}
+                      stroke={'hsl(var(--heroui-primary))'}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+              <Dropdown
+                classNames={{
+                  content: 'min-w-[120px]',
+                }}
+                placement="bottom-end"
+              >
+                <DropdownTrigger>
+                  <Button
+                    isIconOnly
+                    className="absolute right-2 top-2 w-auto rounded-full"
+                    size="sm"
+                    variant="light"
+                  >
+                    <Icon height={16} icon="solar:menu-dots-bold" width={16} />
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu
+                  itemClasses={{
+                    title: 'text-tiny',
+                  }}
+                  variant="flat"
                 >
-                  <defs>
-                    <linearGradient id={'colorUv0'} x1="0" x2="0" y1="0" y2="1">
-                      <stop offset="10%" stopColor="hsl(var(--heroui-success))" stopOpacity={0.3} />
-                      <stop offset="100%" stopColor="hsl(var(--heroui-success))" stopOpacity={0.1} />
-                    </linearGradient>
-                  </defs>
-                  <YAxis
-                    domain={[0, 'auto']}
-                    hide={true}
-                  />
-                  <Area
-                    dataKey="reservationCount"
-                    fill={'url(#colorUv0)'}
-                    stroke={'hsl(var(--heroui-success))'}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+                  <DropdownItem key="view-details" as={Link} href="/guests">View Guest Data</DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
+            </section>
+          </Card>
+
+          {/* Table Availability Card */}
+          <Card className="flex flex-col p-3 dark:border-default-100">
+            <div className="flex h-7 w-7 items-center justify-center rounded-md border p-0.5 border-success-200 bg-success-50 dark:border-success-100">
+              <Icon className="text-success-500" icon="mdi:table-furniture" width={18} />
             </div>
+
+            <div className="pt-1">
+              <dt className="my-2 text-sm font-medium text-default-500">Tables Available</dt>
+              <dd className="text-lg font-semibold text-default-700">
+                {tableAvailability.available}{' '}
+                <span className="text-sm text-default-400">of {tableAvailability.total}</span>
+              </dd>
+            </div>
+            <Progress
+              aria-label="status"
+              className="mt-2"
+              color="success"
+              value={(tableAvailability.available / tableAvailability.total) * 100}
+              size="sm"
+            />
             <Dropdown
               classNames={{
                 content: 'min-w-[120px]',
@@ -440,334 +573,192 @@ export default function ReservationStats() {
                 }}
                 variant="flat"
               >
-                <DropdownItem key="view-details" as={Link} href="/reservations">View All Reservations</DropdownItem>
+                <DropdownItem key="view-details" as={Link} href="/tables">View Tables</DropdownItem>
               </DropdownMenu>
             </Dropdown>
-          </section>
-        </Card>
-        
-        {/* Guest Count Card */}
-        <Card className="dark:border-default-100">
-          <section className="flex flex-col flex-nowrap">
-            <div className="flex flex-col justify-between gap-y-2 px-4 pt-4">
-              <div className="flex flex-col gap-y-2">
-                <div className="flex flex-col gap-y-0">
-                  <dt className="text-sm font-medium text-default-600">Guest Count</dt>
-                  <dt className="text-tiny font-normal text-default-400">Total guests today</dt>
-                </div>
-                <div className="flex items-baseline gap-x-2">
-                  <dd className="text-xl font-semibold text-default-700">
-                    {weeklyReservationData.length > 0 
-                      ? weeklyReservationData[weeklyReservationData.length - 1].guestCount 
-                      : 0}
-                  </dd>
-                  <Chip
-                    classNames={{
-                      content: 'font-medium',
-                    }}
-                    color="primary"
-                    radius="sm"
-                    size="sm"
-                    startContent={<Icon height={16} icon={'solar:arrow-right-up-linear'} width={16} />}
-                    variant="flat"
-                  >
-                    <span>{todayStats.seatedCount} seated</span>
-                  </Chip>
-                </div>
+          </Card>
+        </dl>
+
+        {/* Bottom section with Upcoming Reservations Table and Guest Insights */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 pb-4 px-4">
+          {/* Upcoming Reservations Table */}
+          <div className="lg:col-span-2">
+            <Card className="dark:border-default-100 h-full">
+              <div className="flex justify-between items-center p-3 border-b border-default-100">
+                <h3 className="text-base font-semibold">Upcoming Reservations</h3>
+                <Link
+                  href="/reservations"
+                  className="text-primary-500 text-xs font-medium flex items-center gap-1 hover:underline"
+                >
+                  View All
+                  <Icon icon="solar:arrow-right-linear" width={14} />
+                </Link>
               </div>
-            </div>
-            <div className="min-h-24 w-full">
-              <ResponsiveContainer className="[&_.recharts-surface]:outline-none">
-                <AreaChart
-                  accessibilityLayer
-                  className="translate-y-1 scale-105"
-                  data={weeklyReservationData}
-                >
-                  <defs>
-                    <linearGradient id={'colorUv1'} x1="0" x2="0" y1="0" y2="1">
-                      <stop offset="10%" stopColor="hsl(var(--heroui-primary))" stopOpacity={0.3} />
-                      <stop offset="100%" stopColor="hsl(var(--heroui-primary))" stopOpacity={0.1} />
-                    </linearGradient>
-                  </defs>
-                  <YAxis
-                    domain={[0, 'auto']}
-                    hide={true}
-                  />
-                  <Area
-                    dataKey="guestCount"
-                    fill={'url(#colorUv1)'}
-                    stroke={'hsl(var(--heroui-primary))'}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-            <Dropdown
-              classNames={{
-                content: 'min-w-[120px]',
-              }}
-              placement="bottom-end"
-            >
-              <DropdownTrigger>
-                <Button
-                  isIconOnly
-                  className="absolute right-2 top-2 w-auto rounded-full"
-                  size="sm"
-                  variant="light"
-                >
-                  <Icon height={16} icon="solar:menu-dots-bold" width={16} />
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                itemClasses={{
-                  title: 'text-tiny',
-                }}
-                variant="flat"
-              >
-                <DropdownItem key="view-details" as={Link} href="/guests">View Guest Data</DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
-          </section>
-        </Card>
 
-        {/* Table Availability Card */}
-        <Card className="flex flex-col p-4 dark:border-default-100">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md border p-0.5 border-success-200 bg-success-50 dark:border-success-100">
-            <Icon className="text-success-500" icon="mdi:table-furniture" width={20} />
-          </div>
-
-          <div className="pt-1">
-            <dt className="my-2 text-sm font-medium text-default-500">Tables Available</dt>
-            <dd className="text-2xl font-semibold text-default-700">
-              {tableAvailability.available}{' '}
-              <span className="text-sm text-default-400">of {tableAvailability.total}</span>
-            </dd>
-          </div>
-          <Progress
-            aria-label="status"
-            className="mt-2"
-            color="success"
-            value={(tableAvailability.available / tableAvailability.total) * 100}
-          />
-          <Dropdown
-            classNames={{
-              content: 'min-w-[120px]',
-            }}
-            placement="bottom-end"
-          >
-            <DropdownTrigger>
-              <Button
-                isIconOnly
-                className="absolute right-2 top-2 w-auto rounded-full"
-                size="sm"
-                variant="light"
-              >
-                <Icon height={16} icon="solar:menu-dots-bold" width={16} />
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu
-              itemClasses={{
-                title: 'text-tiny',
-              }}
-              variant="flat"
-            >
-              <DropdownItem key="view-details" as={Link} href="/tables">View Tables</DropdownItem>
-            </DropdownMenu>
-          </Dropdown>
-        </Card>
-      </dl>
-
-      {/* Bottom section with Upcoming Reservations Table and Guest Insights */}
-      <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Upcoming Reservations Table */}
-        <div className="lg:col-span-2">
-          <Card className="dark:border-default-100 h-full">
-            <div className="flex justify-between items-center p-4 border-b border-default-100">
-              <h3 className="text-lg font-semibold">Upcoming Reservations</h3>
-              <Link
-                href="/reservations"
-                className="text-primary-500 text-sm font-medium flex items-center gap-1 hover:underline"
-              >
-                View All
-                <Icon icon="solar:arrow-right-linear" width={16} />
-              </Link>
-            </div>
-
-            <div className="p-6">
-              {upcomingReservations.length > 0 ? (
-                <div className="space-y-4">
-                  {upcomingReservations.slice(0, 5).map(reservation => {
-                    if (!reservation?.id) return null;
-                    
-                    // Safely format time
-                    let formattedTime = "N/A";
-                    try {
-                      formattedTime = format(new Date(reservation.startTime), 'h:mm a');
-                    } catch (error) {
-                      console.error("Error formatting time:", error);
-                    }
-                    
-                    return (
-                      <div key={reservation.id} className="flex items-center justify-between p-3 border rounded-lg bg-white dark:bg-gray-800">
-                        <div className="flex items-center gap-3">
-                          <Avatar name={reservation.guest?.name || 'Guest'} size="sm" className="text-primary-500" />
-                          <div>
-                            <div className="font-medium">{reservation.guest?.name || 'Guest'}</div>
-                            <div className="text-xs text-gray-500 flex items-center gap-1.5">
-                              <Clock className="h-3 w-3" /> {formattedTime}
-                              <span className="mx-1">•</span>
-                              <Users className="h-3 w-3" /> {reservation.numberOfGuests || 0}
-                              <span className="mx-1">•</span>
-                              {reservation.table ? (
-                                <span>Table {reservation.table.name}</span>
-                              ) : (
-                                <span className="text-amber-500">Not assigned</span>
-                              )}
+              <div className="p-4">
+                {upcomingReservations.length > 0 ? (
+                  <div className="space-y-3">
+                    {upcomingReservations.slice(0, 5).map(reservation => {
+                      if (!reservation?.id) return null;
+                      
+                      // Safely format time
+                      let formattedTime = "N/A";
+                      try {
+                        formattedTime = format(new Date(reservation.startTime), 'h:mm a');
+                      } catch (error) {
+                        console.error("Error formatting time:", error);
+                      }
+                      
+                      return (
+                        <div key={reservation.id} className="flex items-center justify-between p-2 border rounded-lg bg-white dark:bg-gray-800">
+                          <div className="flex items-center gap-2">
+                            <Avatar name={reservation.guest?.name || 'Guest'} size="sm" className="text-primary-500" />
+                            <div>
+                              <div className="font-medium text-sm">{reservation.guest?.name || 'Guest'}</div>
+                              <div className="text-xs text-gray-500 flex items-center gap-1">
+                                <Clock className="h-3 w-3" /> {formattedTime}
+                                <span className="mx-1">•</span>
+                                <Users className="h-3 w-3" /> {reservation.numberOfGuests || 0}
+                                <span className="mx-1">•</span>
+                                {reservation.table ? (
+                                  <span>Table {reservation.table.name}</span>
+                                ) : (
+                                  <span className="text-amber-500">Not assigned</span>
+                                )}
+                              </div>
                             </div>
                           </div>
+                          <div className="flex items-center gap-2">
+                            <Chip
+                              size="sm"
+                              color={reservation.status === ReservationStatus.CONFIRMED ? 'success' : 'warning'}
+                              variant="flat"
+                              className="text-xs"
+                            >
+                              {reservation.status === ReservationStatus.CONFIRMED ? 'Confirmed' : 'Pending'}
+                            </Chip>
+                            <Button isIconOnly size="sm" variant="light" as={Link} href="/reservations">
+                              <Icon icon="solar:pen-linear" width={14} />
+                            </Button>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Chip
-                            size="sm"
-                            color={reservation.status === ReservationStatus.CONFIRMED ? 'success' : 'warning'}
-                            variant="flat"
-                          >
-                            {reservation.status === ReservationStatus.CONFIRMED ? 'Confirmed' : 'Pending'}
-                          </Chip>
-                          <Button isIconOnly size="sm" variant="light" as={Link} href="/reservations">
-                            <Icon icon="solar:pen-linear" width={16} />
-                          </Button>
-                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <div className="mb-2 text-base">No upcoming reservations</div>
+                    <p className="text-xs">No upcoming reservations for today</p>
+                  </div>
+                )}
+              </div>
+            </Card>
+          </div>
+
+          {/* Guest Insights Card */}
+          <div className="lg:col-span-1">
+            <Card className="dark:border-default-100 h-full">
+              <div className="flex justify-between items-center p-3 border-b border-default-100">
+                <h3 className="text-base font-semibold">Guest Insights</h3>
+                <Button isIconOnly size="sm" variant="light" className="text-default-500">
+                  <Icon icon="solar:info-circle-linear" width={16} />
+                </Button>
+              </div>
+
+              <div className="p-3 flex flex-col gap-4">
+                {/* Recent Guests */}
+                <div className="flex items-start gap-2">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-md border p-0.5 border-primary-200 bg-primary-50 dark:border-primary-100">
+                    <Icon
+                      className="text-primary-500"
+                      icon="solar:users-group-rounded-bold"
+                      width={18}
+                    />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-default-700">Recent Guests</h4>
+                    <p className="text-xs text-default-500 mb-1">
+                      Repeat customers in the last month
+                    </p>
+                    {recentGuests.length > 0 ? (
+                      <div className="flex -space-x-2 overflow-hidden mt-2">
+                        {recentGuests.slice(0, 4).map((guest) => (
+                          <Avatar key={guest.id} name={guest.name} size="sm" />
+                        ))}
+                        {recentGuests.length > 4 && (
+                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-default-100 text-default-600 text-xs">
+                            +{recentGuests.length - 4}
+                          </div>
+                        )}
                       </div>
-                    );
-                  })}
+                    ) : (
+                      <p className="text-xs text-default-400 mt-2">No recent guests found</p>
+                    )}
+                  </div>
                 </div>
-              ) : (
-                <div className="text-center py-12 text-gray-500">
-                  <div className="mb-2 text-xl">No upcoming reservations</div>
-                  <p className="text-sm">No upcoming reservations for today</p>
-                </div>
-              )}
-            </div>
-          </Card>
-        </div>
 
-        {/* Guest Insights Card */}
-        <div className="lg:col-span-1">
-          <Card className="dark:border-default-100 h-full">
-            <div className="flex justify-between items-center p-4 border-b border-default-100">
-              <h3 className="text-lg font-semibold">Guest Insights</h3>
-              <Button isIconOnly size="sm" variant="light" className="text-default-500">
-                <Icon icon="solar:info-circle-linear" width={18} />
-              </Button>
-            </div>
-
-            <div className="p-4 flex flex-col gap-5">
-              {/* Recent Guests */}
-              <div className="flex items-start gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-md border p-0.5 border-primary-200 bg-primary-50 dark:border-primary-100">
-                  <Icon
-                    className="text-primary-500"
-                    icon="solar:users-group-rounded-bold"
-                    width={20}
-                  />
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-default-700">Recent Guests</h4>
-                  <p className="text-xs text-default-500 mb-1">
-                    Repeat customers in the last month
-                  </p>
-                  {recentGuests.length > 0 ? (
-                    <div className="flex -space-x-2 overflow-hidden mt-2">
-                      {recentGuests.slice(0, 4).map((guest) => (
-                        <Avatar key={guest.id} name={guest.name} size="sm" />
-                      ))}
-                      {recentGuests.length > 4 && (
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-default-100 text-default-600 text-xs">
-                          +{recentGuests.length - 4}
-                        </div>
+                {/* Frequent Guests */}
+                <div className="flex items-start gap-2">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-md border p-0.5 border-success-200 bg-success-50 dark:border-success-100">
+                    <Icon className="text-success-500" icon="solar:medal-ribbon-bold" width={18} />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-default-700">Frequent Guests</h4>
+                    <p className="text-xs text-default-500 mb-1">
+                      Guests who visit often (loyalty tracking)
+                    </p>
+                    <div className="flex flex-col gap-2 mt-2">
+                      {frequentGuests.length > 0 ? (
+                        frequentGuests.slice(0, 2).map((guest) => (
+                          <div key={guest.id} className="flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                              <Avatar name={guest.name} size="sm" />
+                              <span className="text-xs font-medium">{guest.name}</span>
+                            </div>
+                            <Chip size="sm" color="success" variant="flat" className="text-xs">
+                              {guest.visitCount} visits
+                            </Chip>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-xs text-default-400">No frequent guests yet</p>
                       )}
                     </div>
-                  ) : (
-                    <p className="text-xs text-default-400 mt-2">No recent guests found</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Frequent Guests */}
-              <div className="flex items-start gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-md border p-0.5 border-success-200 bg-success-50 dark:border-success-100">
-                  <Icon className="text-success-500" icon="solar:medal-ribbon-bold" width={20} />
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-default-700">Frequent Guests</h4>
-                  <p className="text-xs text-default-500 mb-1">
-                    Guests who visit often (loyalty tracking)
-                  </p>
-                  <div className="flex flex-col gap-2 mt-2">
-                    {frequentGuests.length > 0 ? (
-                      frequentGuests.slice(0, 2).map((guest) => (
-                        <div key={guest.id} className="flex justify-between items-center">
-                          <div className="flex items-center gap-2">
-                            <Avatar name={guest.name} size="sm" />
-                            <span className="text-xs font-medium">{guest.name}</span>
-                          </div>
-                          <Chip size="sm" color="success" variant="flat">
-                            {guest.visitCount} visits
-                          </Chip>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-xs text-default-400">No frequent guests yet</p>
-                    )}
                   </div>
                 </div>
-              </div>
 
-              {/* New Guests */}
-              <div className="flex items-start gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-md border p-0.5 border-warning-200 bg-warning-50 dark:border-warning-100">
-                  <Icon className="text-warning-500" icon="solar:user-plus-bold" width={20} />
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-default-700">New Guests</h4>
-                  <p className="text-xs text-default-500 mb-1">First-time visitors this week</p>
-                  <div className="mt-2">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-xs text-default-600">New guests</span>
-                      <span className="text-xs font-medium">{newGuestsThisWeek}</span>
+                {/* New Guests */}
+                <div className="flex items-start gap-2">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-md border p-0.5 border-warning-200 bg-warning-50 dark:border-warning-100">
+                    <Icon className="text-warning-500" icon="solar:user-plus-bold" width={18} />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-default-700">New Guests</h4>
+                    <p className="text-xs text-default-500 mb-1">First-time visitors this week</p>
+                    <div className="mt-2">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs text-default-600">New guests</span>
+                        <span className="text-xs font-medium">{newGuestsThisWeek}</span>
+                      </div>
+                      <Progress
+                        aria-label="New guests"
+                        value={newGuestsThisWeek > 0 ? 100 : 0}
+                        color="warning"
+                        size="sm"
+                        className="max-w-md"
+                      />
+                      {newGuestsThisWeek > 0 && (
+                        <p className="text-xs text-success-500 mt-1 flex items-center gap-1">
+                          <Icon icon="solar:arrow-up-bold" width={12} />
+                          <span>New guests added this week</span>
+                        </p>
+                      )}
                     </div>
-                    <Progress
-                      aria-label="New guests"
-                      value={newGuestsThisWeek > 0 ? 100 : 0}
-                      color="warning"
-                      size="sm"
-                      className="max-w-md"
-                    />
-                    {newGuestsThisWeek > 0 && (
-                      <p className="text-xs text-success-500 mt-1 flex items-center gap-1">
-                        <Icon icon="solar:arrow-up-bold" width={14} />
-                        <span>New guests added this week</span>
-                      </p>
-                    )}
                   </div>
                 </div>
               </div>
-            </div>
-
-            <div className="p-4 pt-0 mt-auto">
-              <Button
-                as={Link}
-                href="/guests"
-                variant="flat"
-                color="success"
-                radius="sm"
-                className="w-full"
-                endContent={<Icon icon="solar:arrow-right-linear" width={16} />}
-              >
-                View All Guest Data
-              </Button>
-            </div>
-          </Card>
+            </Card>
+          </div>
         </div>
       </div>
       

@@ -515,11 +515,12 @@ export default function ReservationDashboard() {
       <Modal
         isOpen={isAddModalOpen}
         onClose={handleCloseAddModal}
-        placement="center"
-        scrollBehavior="inside"
-        size="5xl"
+        placement="bottom"
+        scrollBehavior="outside"
+        size="full"
         classNames={{
           base: 'max-w-5xl',
+
         }}
       >
         <ModalContent>

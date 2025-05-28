@@ -163,8 +163,8 @@ export default function AddGuestModal({ isOpen, onClose }: AddGuestModalProps) {
       onClose={onClose}
       placement="center"
       scrollBehavior="inside"
+      size="full"
       classNames={{
-        base: 'max-w-md',
         wrapper: 'z-50',
         body: 'p-0',
         closeButton:
@@ -220,110 +220,110 @@ export default function AddGuestModal({ isOpen, onClose }: AddGuestModalProps) {
         </ModalHeader>
 
         <ModalBody>
-          <form id="add-guest-form" onSubmit={handleSubmit(onSubmit)}>
-            <div className="px-6 pt-4 pb-2">
-              {/* Animated step content */}
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={step}
-                  initial={{ opacity: 0, x: 10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="overflow-hidden"
-                >
-                  {/* Step 1: Basic Details */}
-                  {step === 'details' && (
-                    <div className="space-y-10 mb-8">
-                      <div>
-                        <Input
-                          label="Full Name"
-                          labelPlacement="outside"
-                          placeholder="John Smith"
-                          startContent={<User className="text-gray-400 h-4 w-4" />}
-                          isRequired
-                          isInvalid={!!errors.name}
-                          errorMessage={errors.name?.message}
-                          radius="sm"
-                          variant="flat"
-                          isDisabled={createGuestMutation.isPending}
-                          {...register('name')}
-                        />
-                      </div>
-
-                      <div>
-                        <Input
-                          label="Phone Number"
-                          labelPlacement="outside"
-                          placeholder="+1 (555) 123-4567"
-                          startContent={<Phone className="text-gray-400 h-4 w-4" />}
-                          isRequired
-                          isInvalid={!!errors.phone}
-                          errorMessage={errors.phone?.message}
-                          radius="sm"
-                          variant="flat"
-                          isDisabled={createGuestMutation.isPending}
-                          {...register('phone')}
-                        />
-                      </div>
-
-                      <div>
-                        <Input
-                          label="Email Address"
-                          labelPlacement="outside"
-                          placeholder="john.smith@example.com"
-                          startContent={<Mail className="text-gray-400 h-4 w-4" />}
-                          isInvalid={!!errors.email}
-                          errorMessage={errors.email?.message}
-                          radius="sm"
-                          variant="flat"
-                          isDisabled={createGuestMutation.isPending}
-                          {...register('email')}
-                        />
-                      </div>
+          <div className="px-6 pt-4 pb-2">
+            {/* Animated step content */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={step}
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                {/* Step 1: Basic Details */}
+                {step === 'details' && (
+                  <div className="space-y-10 mb-8">
+                    <div>
+                      <Input
+                        label="Full Name"
+                        labelPlacement="outside"
+                        placeholder="John Smith"
+                        startContent={<User className="text-gray-400 h-4 w-4" />}
+                        isRequired
+                        isInvalid={!!errors.name}
+                        errorMessage={errors.name?.message}
+                        radius="sm"
+                        variant="flat"
+                        isDisabled={createGuestMutation.isPending}
+                        {...register('name')}
+                      />
                     </div>
-                  )}
 
-                  {/* Step 2: Tags */}
-                  {step === 'tags' && (
-                    <div className="space-y-4">
-                      <p className="text-sm text-gray-600 dark:text-gray-300">
-                        Select all relevant categories for this guest:
-                      </p>
-
-                      <div className="flex flex-wrap gap-2 p-4 bg-gray-50/70 dark:bg-gray-800/20 rounded-lg shadow-sm">
-                        {availableTags.map((tag) => (
-                          <Chip
-                            key={tag}
-                            variant={selectedTags.includes(tag) ? 'solid' : 'flat'}
-                            color={selectedTags.includes(tag) ? getTagColor(tag) : 'default'}
-                            radius="sm"
-                            startContent={
-                              selectedTags.includes(tag) ? <Check className="h-3 w-3" /> : undefined
-                            }
-                            className={classNames(
-                              'cursor-pointer transition-all',
-                              selectedTags.includes(tag)
-                                ? 'border-0'
-                                : 'border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700/30'
-                            )}
-                            onClick={() => toggleTag(tag)}
-                            isDisabled={createGuestMutation.isPending}
-                          >
-                            {tag}
-                          </Chip>
-                        ))}
-                      </div>
-
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                        These categories help you filter and identify guests quickly.
-                      </p>
+                    <div>
+                      <Input
+                        label="Phone Number"
+                        labelPlacement="outside"
+                        placeholder="+1 (555) 123-4567"
+                        startContent={<Phone className="text-gray-400 h-4 w-4" />}
+                        isRequired
+                        isInvalid={!!errors.phone}
+                        errorMessage={errors.phone?.message}
+                        radius="sm"
+                        variant="flat"
+                        isDisabled={createGuestMutation.isPending}
+                        {...register('phone')}
+                      />
                     </div>
-                  )}
 
-                  {/* Step 3: Notes */}
-                  {step === 'notes' && (
-                    <div className="space-y-4">
+                    <div>
+                      <Input
+                        label="Email Address"
+                        labelPlacement="outside"
+                        placeholder="john.smith@example.com"
+                        startContent={<Mail className="text-gray-400 h-4 w-4" />}
+                        isInvalid={!!errors.email}
+                        errorMessage={errors.email?.message}
+                        radius="sm"
+                        variant="flat"
+                        isDisabled={createGuestMutation.isPending}
+                        {...register('email')}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 2: Tags */}
+                {step === 'tags' && (
+                  <div className="space-y-4">
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                      Select all relevant categories for this guest:
+                    </p>
+
+                    <div className="flex flex-wrap gap-2 p-4 bg-gray-50/70 dark:bg-gray-800/20 rounded-lg shadow-sm">
+                      {availableTags.map((tag) => (
+                        <Chip
+                          key={tag}
+                          variant={selectedTags.includes(tag) ? 'solid' : 'flat'}
+                          color={selectedTags.includes(tag) ? getTagColor(tag) : 'default'}
+                          radius="sm"
+                          startContent={
+                            selectedTags.includes(tag) ? <Check className="h-3 w-3" /> : undefined
+                          }
+                          className={classNames(
+                            'cursor-pointer transition-all',
+                            selectedTags.includes(tag)
+                              ? 'border-0'
+                              : 'border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700/30'
+                          )}
+                          onClick={() => toggleTag(tag)}
+                          isDisabled={createGuestMutation.isPending}
+                        >
+                          {tag}
+                        </Chip>
+                      ))}
+                    </div>
+
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                      These categories help you filter and identify guests quickly.
+                    </p>
+                  </div>
+                )}
+
+                {/* Step 3: Notes */}
+                {step === 'notes' && (
+                  <div className="space-y-4">
+                    <form id="add-guest-form" onSubmit={handleSubmit(onSubmit)}>
                       <Textarea
                         label="Guest Notes"
                         labelPlacement="outside"
@@ -341,72 +341,69 @@ export default function AddGuestModal({ isOpen, onClose }: AddGuestModalProps) {
                         Add information like dietary restrictions, seating preferences, or special
                         occasions.
                       </p>
-                    </div>
-                  )}
-                </motion.div>
-              </AnimatePresence>
+                    </form>
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          <ModalFooter className="px-6 py-4 bg-gray-50/80 dark:bg-gray-800/20 border-t border-gray-100 dark:border-gray-800">
+            <div className="flex w-full justify-between">
+              {/* Back button (except on first step) */}
+              {step !== 'details' ? (
+                <Button
+                  type="button"
+                  variant="flat"
+                  color="default"
+                  startContent={<ChevronLeft className="h-4 w-4" />}
+                  radius="sm"
+                  onPress={() => setStep(step === 'notes' ? 'tags' : 'details')}
+                  isDisabled={createGuestMutation.isPending}
+                >
+                  Back
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="flat"
+                  color="default"
+                  radius="sm"
+                  onPress={onClose}
+                  isDisabled={createGuestMutation.isPending}
+                >
+                  Cancel
+                </Button>
+              )}
+
+              {/* Next/Submit button */}
+              {step !== 'notes' ? (
+                <Button
+                  type="button"
+                  color="success"
+                  endContent={<ChevronRight className="h-4 w-4" />}
+                  radius="sm"
+                  isDisabled={!isCurrentStepValid() || createGuestMutation.isPending}
+                  onPress={() => setStep(step === 'details' ? 'tags' : 'notes')}
+                  className="text-white"
+                >
+                  Next
+                </Button>
+              ) : (
+                <Button
+                  type="submit"
+                  form="add-guest-form"
+                  color="success"
+                  radius="sm"
+                  startContent={!createGuestMutation.isPending && <Save className="h-4 w-4" />}
+                  isLoading={createGuestMutation.isPending}
+                  className="text-white"
+                >
+                  {createGuestMutation.isPending ? 'Creating...' : 'Create Guest'}
+                </Button>
+              )}
             </div>
-
-            <ModalFooter className="px-6 py-4 bg-gray-50/80 dark:bg-gray-800/20 border-t border-gray-100 dark:border-gray-800">
-              <div className="flex w-full justify-between">
-                {/* Back button (except on first step) */}
-                {step !== 'details' ? (
-                  <Button
-                    type="button"
-                    variant="flat"
-                    color="default"
-                    startContent={<ChevronLeft className="h-4 w-4" />}
-                    radius="sm"
-                    onClick={() => setStep(step === 'notes' ? 'tags' : 'details')}
-                    isDisabled={createGuestMutation.isPending}
-                  >
-                    Back
-                  </Button>
-                ) : (
-                  <Button
-                    type="button"
-                    variant="flat"
-                    color="default"
-                    radius="sm"
-                    onClick={onClose}
-                    isDisabled={createGuestMutation.isPending}
-                  >
-                    Cancel
-                  </Button>
-                )}
-
-                {/* Next/Submit button */}
-                {step !== 'notes' ? (
-                  <Button
-                    type="button"
-                    color="success"
-                    endContent={<ChevronRight className="h-4 w-4" />}
-                    radius="sm"
-                    isDisabled={!isCurrentStepValid() || createGuestMutation.isPending}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setStep(step === 'details' ? 'tags' : 'notes');
-                      e.stopPropagation();
-                    }}
-                    className="text-white"
-                  >
-                    Next
-                  </Button>
-                ) : (
-                  <Button
-                    type="submit"
-                    color="success"
-                    radius="sm"
-                    startContent={!createGuestMutation.isPending && <Save className="h-4 w-4" />}
-                    isLoading={createGuestMutation.isPending}
-                    className="text-white"
-                  >
-                    {createGuestMutation.isPending ? 'Creating...' : 'Create Guest'}
-                  </Button>
-                )}
-              </div>
-            </ModalFooter>
-          </form>
+          </ModalFooter>
         </ModalBody>
       </ModalContent>
     </Modal>
