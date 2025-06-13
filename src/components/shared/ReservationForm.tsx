@@ -171,7 +171,7 @@ export function ReservationForm({
   // State for form fields
   const [reservationDate, setReservationDate] = useState<CalendarDate>(today(getLocalTimeZone()));
   const [reservationTime, setReservationTime] = useState<string>(getDefaultTime());
-  const [partySize, setPartySize] = useState<string>('2');
+  const [partySize, setPartySize] = useState<string>('');
   const [specialRequests, setSpecialRequests] = useState<string>('');
   const [selectedTable, setSelectedTable] = useState<string>('');
   const [timeFormat, setTimeFormat] = useState<TimeFormatEnum>(TimeFormatEnum.TwelveHour);
@@ -254,8 +254,8 @@ export function ReservationForm({
 
   // Update to handle numeric input instead of dropdown selection
   const handlePartySizeChange = (value: string) => {
-    // Only allow numbers between 1 and 20
-    if (value === '' || (parseInt(value) >= 1 && parseInt(value) <= 20)) {
+    // Only allow numbers 1 or greater
+    if (value === '' || (parseInt(value) >= 1)) {
       setPartySize(value);
     }
   };
@@ -270,6 +270,12 @@ export function ReservationForm({
   };
 
   const handleSubmit = async () => {
+    // Validate party size
+    if (!partySize || partySize.trim() === '' || parseInt(partySize) < 1) {
+      // You could add a toast or error message here if needed
+      return;
+    }
+
     // Convert time strings to ISO format
     const dateString = reservationDate.toString(); // YYYY-MM-DD
     const timeString = reservationTime; // HH:MM
@@ -517,12 +523,14 @@ export function ReservationForm({
                 </div>
               </div>
 
-              <div className="flex items-start gap-2">
-                <Clock className="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0" />
-                <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                  {partySize} {parseInt(partySize) === 1 ? 'guest' : 'guests'}
-                </p>
-              </div>
+              {partySize && parseInt(partySize) > 0 && (
+                <div className="flex items-start gap-2">
+                  <Clock className="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                  <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                    {partySize} {parseInt(partySize) === 1 ? 'guest' : 'guests'}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -547,12 +555,19 @@ export function ReservationForm({
             <Input
               type="number"
               min={1}
-              max={20}
               value={partySize}
               onValueChange={handlePartySizeChange}
+              placeholder="Enter number of guests"
               radius="sm"
               variant="flat"
               size="sm"
+              isRequired
+              isInvalid={partySize !== '' && parseInt(partySize) < 1}
+              errorMessage={
+                partySize !== '' && parseInt(partySize) < 1
+                  ? 'Please enter a number greater than 0'
+                  : undefined
+              }
               classNames={{
                 inputWrapper: 'bg-gray-50/50 dark:bg-gray-800/30 shadow-sm h-[40px]',
                 input: 'text-sm',
@@ -689,6 +704,7 @@ export function ReservationForm({
               className="flex-1 text-white"
               onPress={handleSubmit}
               isLoading={isSubmitting}
+              isDisabled={!partySize || partySize.trim() === '' || parseInt(partySize) < 1}
             >
               {isSubmitting ? 'Creating...' : 'Create Reservation'}
             </Button>

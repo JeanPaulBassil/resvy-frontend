@@ -34,6 +34,7 @@ import { Clock, Users } from 'lucide-react';
 import AddReservationModal from '../reservations/AddReservationModal';
 import FloorPlanAssignmentModal from '../reservations/FloorPlanAssignmentModal';
 import AddGuestModal from '../guests/AddGuestModal';
+import ShiftAnalytics from '../shifts/ShiftAnalytics';
 
 export default function ReservationStats() {
   // State for modals
@@ -759,6 +760,11 @@ export default function ReservationStats() {
               </div>
             </Card>
           </div>
+        </div>
+        
+        {/* Shift Analytics Section */}
+        <div className="mt-8">
+          <ShiftAnalytics selectedDate={todayStr} />
         </div>
       </div>
       

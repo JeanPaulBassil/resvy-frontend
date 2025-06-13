@@ -23,6 +23,7 @@ export interface UpcomingShift {
   endTime: string;
   color: string;
   reservations: number;
+  guests: number;
 }
 
 export interface CreateShiftDto {
@@ -46,4 +47,5 @@ export interface ShiftReservationCount {
   shiftId: string;
   date: string;
   count: number;
+  guestCount: number;
 } 

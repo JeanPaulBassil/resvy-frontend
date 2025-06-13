@@ -310,14 +310,13 @@ export default function EditReservationModal({
                 value={numberOfGuests}
                 onChange={(e) => setNumberOfGuests(e.target.value)}
                 min={1}
-                max={20}
                 size="sm"
                 classNames={{
                   label: 'font-medium text-xs',
                   input: 'bg-white dark:bg-gray-800',
                 }}
                 startContent={<Users className="w-4 h-4 text-gray-400" />}
-                description="Maximum 20 guests per reservation"
+                description="Enter the number of guests"
               />
             </Card>
           </div>

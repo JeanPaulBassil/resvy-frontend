@@ -3,6 +3,7 @@
 import { useRestaurant } from '@/components/providers/RestaurantProvider';
 import { SidebarProvider } from '@/components/providers/SidebarProvider';
 import AppWrapper from '@/components/sidebar';
+import RestaurantIndicator from '@/components/shared/RestaurantIndicator';
 import { Skeleton } from '@heroui/react';
 import React from 'react';
 
@@ -16,7 +17,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         <main className="flex-1 overflow-y-auto transition-all duration-300 ease-in-out transform-gpu w-full">
           {isLoading ? (
             <div className="p-4 md:p-6 max-w-[1600px] mx-auto h-full">
-              <div className="bg-white rounded-xl shadow-sm h-full p-6">
+                <div className="bg-white rounded-xl shadow-sm h-full p-6">
                 <div className="flex flex-col h-full">
                   {/* Header skeleton with logo */}
                   <div className="flex items-center justify-between mb-8">
@@ -93,7 +94,10 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               </div>
             </div>
           ) : (
-            <div className="h-full">{children}</div>
+            <div className="relative h-full">
+              <RestaurantIndicator />
+              {children}
+            </div>
           )}
         </main>
       </div>

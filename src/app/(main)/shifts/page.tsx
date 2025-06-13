@@ -36,6 +36,7 @@ import {
   useShiftReservationCounts 
 } from '@/hooks/useShift';
 import { useToast } from '@/contexts/ToastContext';
+import ShiftAnalytics from '@/components/shifts/ShiftAnalytics';
 
 interface FormErrors {
   name?: string;
@@ -106,11 +107,13 @@ export default function ShiftsPage() {
     const upcomingShifts: UpcomingShift[] = [];
     const today = new Date();
     
-    // Create a lookup map for reservation counts
+    // Create lookup maps for reservation and guest counts
     const reservationCountMap: Record<string, number> = {};
+    const guestCountMap: Record<string, number> = {};
     reservationCountsList.forEach(count => {
       const key = `${count.shiftId}-${count.date}`;
       reservationCountMap[key] = count.count;
+      guestCountMap[key] = count.guestCount;
     });
     
     for (let i = 0; i < 14; i++) {
@@ -129,7 +132,8 @@ export default function ShiftsPage() {
             startTime: shift.startTime,
             endTime: shift.endTime,
             color: shift.color,
-            reservations: reservationCountMap[shiftDateKey] || 0
+            reservations: reservationCountMap[shiftDateKey] || 0,
+            guests: guestCountMap[shiftDateKey] || 0
           });
         }
       });
@@ -352,6 +356,15 @@ export default function ShiftsPage() {
               </div>
             }
           />
+          <Tab 
+            key="analytics" 
+            title={
+              <div className="flex items-center gap-2">
+                <Icon icon="solar:chart-line-linear" className="text-lg" />
+                <span>Analytics</span>
+              </div>
+            }
+          />
         </Tabs>
 
         {/* Upcoming Shifts View */}
@@ -388,13 +401,22 @@ export default function ShiftsPage() {
                                 {shift.startTime} - {shift.endTime}
                               </div>
                             </div>
-                            <Chip 
-                              size="sm" 
-                              variant="flat" 
-                              className="bg-gray-100"
-                            >
-                              {shift.reservations} reservations
-                            </Chip>
+                            <div className="flex flex-col gap-1">
+                              <Chip 
+                                size="sm" 
+                                variant="flat" 
+                                className="bg-blue-100 text-blue-700"
+                              >
+                                {shift.reservations} reservations
+                              </Chip>
+                              <Chip 
+                                size="sm" 
+                                variant="flat" 
+                                className="bg-green-100 text-green-700"
+                              >
+                                {shift.guests} guests
+                              </Chip>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -577,6 +599,13 @@ export default function ShiftsPage() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Analytics View */}
+        {selectedTab === 'analytics' && (
+          <div>
+            <ShiftAnalytics />
           </div>
         )}
       </div>

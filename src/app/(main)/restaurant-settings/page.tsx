@@ -38,6 +38,7 @@ import {
   restaurantDeleteSchema,
   RestaurantDeleteSchema,
 } from '@/schemas/restaurantSettingsSchema';
+import SmsConfigModal from '@/components/sms/SmsConfigModal';
 
 export default function RestaurantSettingsPage() {
   const router = useRouter();
@@ -56,6 +57,7 @@ export default function RestaurantSettingsPage() {
   const { isOpen: isDeleteModalOpen, onOpen: onOpenDeleteModal, onClose: onCloseDeleteModal } = useDisclosure();
   const { isOpen: isUnsavedChangesModalOpen, onClose: onCloseUnsavedChangesModal } = useDisclosure();
   const { isOpen: isComingSoonModalOpen, onOpen: onOpenComingSoonModal, onClose: onCloseComingSoonModal } = useDisclosure();
+  const { isOpen: isSmsConfigModalOpen, onOpen: onOpenSmsConfigModal, onClose: onCloseSmsConfigModal } = useDisclosure();
   const [comingSoonFeature, setComingSoonFeature] = useState("");
   
   // Form setup for restaurant settings
@@ -547,6 +549,122 @@ export default function RestaurantSettingsPage() {
                 )}
               </motion.div>
             </Tab>
+
+            <Tab
+              key="sms"
+              title={
+                <div className="flex items-center gap-2">
+                  <Icon icon="solar:smartphone-bold-duotone" className="text-lg" />
+                  <span>SMS Settings</span>
+                </div>
+              }
+            >
+              <motion.div 
+                className="pt-4"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Card className="shadow-sm">
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                        <Icon icon="solar:smartphone-bold-duotone" className="text-green-600 dark:text-green-400 w-5 h-5" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">SMS Notifications</h3>
+                    </div>
+                  </CardHeader>
+                  <Divider />
+                  <CardBody className="gap-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+                      <div className="space-y-1">
+                        <h4 className="text-base font-medium text-gray-800 dark:text-gray-100">Best2sms Integration</h4>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          Configure your Best2sms credentials to send SMS notifications to guests for reservations.
+                        </p>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          <Chip size="sm" color="primary" variant="flat">
+                            <div className="flex items-center gap-1">
+                              <Icon icon="solar:check-circle-bold" className="w-3 h-3" />
+                              <span>Reservation confirmations</span>
+                            </div>
+                          </Chip>
+                          <Chip size="sm" color="primary" variant="flat">
+                            <div className="flex items-center gap-1">
+                              <Icon icon="solar:bell-bold" className="w-3 h-3" />
+                              <span>Reminders</span>
+                            </div>
+                          </Chip>
+                          <Chip size="sm" color="primary" variant="flat">
+                            <div className="flex items-center gap-1">
+                              <Icon icon="solar:close-circle-bold" className="w-3 h-3" />
+                              <span>Cancellations</span>
+                            </div>
+                          </Chip>
+                          <Chip size="sm" color="primary" variant="flat">
+                            <div className="flex items-center gap-1">
+                              <Icon icon="solar:edit-bold" className="w-3 h-3" />
+                              <span>Modifications</span>
+                            </div>
+                          </Chip>
+                        </div>
+                      </div>
+                      <Button 
+                        color="primary" 
+                        variant="flat"
+                        onPress={onOpenSmsConfigModal}
+                        startContent={<Icon icon="solar:settings-bold-duotone" className="text-lg" />}
+                        className="min-w-fit"
+                      >
+                        Configure SMS
+                      </Button>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Icon icon="solar:info-circle-bold-duotone" className="text-blue-500 w-5 h-5" />
+                          <h5 className="font-medium text-gray-800 dark:text-gray-100">Features</h5>
+                        </div>
+                        <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                          <li className="flex items-center gap-2">
+                            <Icon icon="solar:check-bold" className="text-green-500 w-4 h-4" />
+                            <span>Multi-language support (English/Arabic)</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <Icon icon="solar:check-bold" className="text-green-500 w-4 h-4" />
+                            <span>Scheduled messaging</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <Icon icon="solar:check-bold" className="text-green-500 w-4 h-4" />
+                            <span>Custom sender ID</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <Icon icon="solar:check-bold" className="text-green-500 w-4 h-4" />
+                            <span>Real-time delivery status</span>
+                          </li>
+                        </ul>
+                      </div>
+                      
+                      <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Icon icon="solar:dollar-bold-duotone" className="text-orange-500 w-5 h-5" />
+                          <h5 className="font-medium text-gray-800 dark:text-gray-100">Pricing</h5>
+                        </div>
+                        <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                          <p>SMS costs are based on your Best2sms account credits.</p>
+                          <p>Typical costs:</p>
+                          <ul className="ml-4 space-y-1">
+                            <li>• Local SMS: 0.01-0.05 credits</li>
+                            <li>• International SMS: 0.05-0.20 credits</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </CardBody>
+                </Card>
+              </motion.div>
+            </Tab>
             
             <Tab
               key="activity"
@@ -836,6 +954,15 @@ export default function RestaurantSettingsPage() {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      {/* SMS Configuration Modal */}
+      <SmsConfigModal
+        isOpen={isSmsConfigModalOpen}
+        onClose={onCloseSmsConfigModal}
+        onSuccess={() => {
+          toast.success('SMS configuration updated successfully');
+        }}
+      />
     </div>
   );
 } 

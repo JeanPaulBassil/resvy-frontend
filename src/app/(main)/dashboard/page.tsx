@@ -8,6 +8,7 @@ import ReservationStats from '@/components/dashboard/ReservationStats';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useRestaurant } from '@/components/providers/RestaurantProvider';
 import { useRestaurantData } from '@/hooks/useRestaurantData';
+import PageHeader from '@/components/shared/PageHeader';
 
 export default function DashboardPage() {
   const { user, userRole, isInitializing, refreshUserData } = useAuth();
@@ -37,6 +38,14 @@ export default function DashboardPage() {
 
   // Handle redirect to onboarding if user has no restaurants
   useEffect(() => {
+    // Check if any modals are currently open by looking for modal overlays in the DOM
+    const hasOpenModals = () => {
+      const modalOverlays = document.querySelectorAll('[data-overlay="true"]');
+      const modalBackdrops = document.querySelectorAll('.fixed.inset-0');
+      const ariaModal = document.querySelectorAll('[role="dialog"]');
+      return modalOverlays.length > 0 || modalBackdrops.length > 0 || ariaModal.length > 0;
+    };
+
     // Only proceed if we have user data and restaurant data is done loading
     if (!isInitializing && !isLoadingRestaurant && user && userRole === 'USER') {
       console.log('Dashboard redirect check - user:', user.uid);
@@ -52,14 +61,21 @@ export default function DashboardPage() {
         isRedirecting
       );
 
+      // Check if modals are open before attempting to redirect
+      const modalsOpen = hasOpenModals();
+      console.log('Dashboard redirect check - modals open:', modalsOpen);
+
       // Only redirect if we haven't already tried too many times (prevent infinite loops)
-      if (hasRestaurants === false && !isRedirecting && redirectAttempts < 2) {
+      // AND no modals are currently open
+      if (hasRestaurants === false && !isRedirecting && redirectAttempts < 2 && !modalsOpen) {
         console.log('User has no restaurants, redirecting to onboarding page...');
         setIsRedirecting(true);
         setRedirectAttempts((prev) => prev + 1);
         router.push('/onboarding');
       } else if (redirectAttempts >= 2) {
         console.log('Too many redirect attempts, showing dashboard anyway');
+      } else if (modalsOpen) {
+        console.log('Modals are open, skipping redirect to prevent modal close');
       }
     }
   }, [
@@ -97,6 +113,12 @@ export default function DashboardPage() {
     <div className="p-8">
       {/* Non-admin content */}
       <NonAdminOnly>
+        <PageHeader 
+          title="Dashboard" 
+          subtitle="Overview of your restaurant's performance" 
+          showRestaurant={true}
+        />
+        
         {/* Reservation Statistics */}
         <div className="bg-white rounded-lg">
           <ReservationStats />
