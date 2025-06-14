@@ -40,7 +40,6 @@ import { useRestaurant } from '../providers/RestaurantProvider';
 import AddReservationModal from './AddReservationModal';
 import ReservationList from './ReservationList';
 import FloorPlanAssignmentModal from './FloorPlanAssignmentModal';
-import SmsTestButton from '../debug/SmsTestButton';
 
 type StatusFilter = ReservationStatus | 'ALL';
 
@@ -370,9 +369,6 @@ export default function ReservationDashboard() {
             >
               Reset
             </Button>
-
-            {/* SMS Test Button */}
-            <SmsTestButton />
           </div>
         </CardHeader>
 
