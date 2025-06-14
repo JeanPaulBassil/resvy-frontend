@@ -5,6 +5,8 @@ export interface SmsConfig {
   username: string;
   password: string;
   senderId: string;
+  confirmationEnabled?: boolean;
+  cancellationEnabled?: boolean;
 }
 
 export interface SendSmsRequest {
@@ -30,6 +32,8 @@ export interface UpdateSmsConfigRequest {
   username?: string;
   password?: string;
   senderId?: string;
+  confirmationEnabled?: boolean;
+  cancellationEnabled?: boolean;
 }
 
 export interface RequestSenderIdRequest {
@@ -133,6 +137,8 @@ export const smsApi = {
         username: '',
         password: '',
         senderId: '',
+        confirmationEnabled: true,
+        cancellationEnabled: true,
       };
     }
   },

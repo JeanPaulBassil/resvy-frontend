@@ -280,14 +280,21 @@ export function ReservationForm({
     const dateString = reservationDate.toString(); // YYYY-MM-DD
     const timeString = reservationTime; // HH:MM
 
-    // Create startTime by combining date and time
+    // Create startTime by combining date and time - keep it in local timezone
     const [hours, minutes] = timeString.split(':').map(Number);
-    const startTime = new Date(dateString);
-    startTime.setHours(hours, minutes, 0, 0);
-
-    // Automatically set endTime to be 2 hours after startTime
-    const endTime = new Date(startTime);
-    endTime.setHours(endTime.getHours() + 2);
+    
+    // Create the date in local timezone and format as ISO string manually
+    // This prevents automatic UTC conversion
+    const year = reservationDate.year;
+    const month = reservationDate.month;
+    const day = reservationDate.day;
+    
+    // Format as YYYY-MM-DDTHH:MM:SS.000Z but keep the local time
+    const startTimeISO = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}T${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00.000Z`;
+    
+    // Calculate end time (2 hours later)
+    const endHours = hours + 2;
+    const endTimeISO = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}T${endHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00.000Z`;
 
     // Automatically determine the shift based on reservation time
     const matchingShift = getMatchingShift();
@@ -296,8 +303,8 @@ export function ReservationForm({
       guestId: guest.id,
       restaurantId: actualRestaurantId,
       date: dateString,
-      startTime: startTime.toISOString(),
-      endTime: endTime.toISOString(),
+      startTime: startTimeISO,
+      endTime: endTimeISO,
       numberOfGuests: parseInt(partySize),
       note: specialRequests || undefined,
       status: ReservationStatus.PENDING,

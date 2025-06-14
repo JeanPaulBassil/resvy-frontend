@@ -24,7 +24,7 @@ export interface SmsNotificationOptions {
 
 // Default SMS templates
 export const defaultSmsTemplates: SmsTemplates = {
-  reservationConfirmed: `Dear {{guestName}}, your reservation at {{restaurantName}} on {{reservationDate}} at {{reservationTime}} for {{numberOfGuests}} guests has been confirmed. Thank you!`,
+  reservationConfirmed: `Dear {{guestName}}, your reservation has been confirmed on {{dayName}}, {{monthName}} {{dayNumber}}, {{year}} at {{time}} {{ampm}} for {{numberOfGuests}} {{guestPlural}}.`,
   
   reservationReminder: `Hi {{guestName}}, this is a reminder for your reservation at {{restaurantName}} today at {{reservationTime}} for {{numberOfGuests}} guests. See you soon!`,
   
@@ -34,10 +34,54 @@ export const defaultSmsTemplates: SmsTemplates = {
 };
 
 export class SmsNotificationService {
+  private static formatReservationDateTime(startTime: string): {
+    dayName: string;
+    monthName: string;
+    dayNumber: string;
+    year: string;
+    time: string;
+    ampm: string;
+  } {
+    const date = new Date(startTime);
+    
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                      'July', 'August', 'September', 'October', 'November', 'December'];
+    
+    const dayName = dayNames[date.getDay()];
+    const monthName = monthNames[date.getMonth()];
+    const dayNumber = date.getDate().toString();
+    const year = date.getFullYear().toString();
+    
+    // Format time in 12-hour format
+    let hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // 0 should be 12
+    
+    const time = `${hours}:${minutes.toString().padStart(2, '0')}`;
+    
+    return {
+      dayName,
+      monthName, 
+      dayNumber,
+      year,
+      time,
+      ampm
+    };
+  }
+  
   private static replaceTemplateVariables(
     template: string,
     options: SmsNotificationOptions
   ): string {
+    // Get formatted date/time components
+    const dateTimeFormatted = this.formatReservationDateTime(options.reservationTime);
+    
+    // Determine guest plural
+    const guestPlural = options.numberOfGuests === 1 ? 'guest' : 'guests';
+    
     return template
       .replace(/{{guestName}}/g, options.guestName)
       .replace(/{{guestPhone}}/g, options.guestPhone)
@@ -46,7 +90,15 @@ export class SmsNotificationService {
       .replace(/{{reservationTime}}/g, options.reservationTime)
       .replace(/{{numberOfGuests}}/g, options.numberOfGuests.toString())
       .replace(/{{tableNumber}}/g, options.tableNumber || 'N/A')
-      .replace(/{{additionalInfo}}/g, options.additionalInfo || '');
+      .replace(/{{additionalInfo}}/g, options.additionalInfo || '')
+      // New formatted date/time replacements
+      .replace(/{{dayName}}/g, dateTimeFormatted.dayName)
+      .replace(/{{monthName}}/g, dateTimeFormatted.monthName)
+      .replace(/{{dayNumber}}/g, dateTimeFormatted.dayNumber)
+      .replace(/{{year}}/g, dateTimeFormatted.year)
+      .replace(/{{time}}/g, dateTimeFormatted.time)
+      .replace(/{{ampm}}/g, dateTimeFormatted.ampm)
+      .replace(/{{guestPlural}}/g, guestPlural);
   }
 
   static async sendReservationConfirmation(

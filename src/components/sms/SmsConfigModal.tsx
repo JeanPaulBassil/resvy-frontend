@@ -29,6 +29,8 @@ interface SmsConfig {
   username: string;
   password: string;
   senderId: string;
+  confirmationEnabled: boolean;
+  cancellationEnabled: boolean;
 }
 
 interface SmsConfigModalProps {
@@ -50,6 +52,8 @@ export default function SmsConfigModal({
     username: '',
     password: '',
     senderId: '',
+    confirmationEnabled: true,
+    cancellationEnabled: true,
   });
   
   const [isLoading, setIsLoading] = useState(false);
@@ -75,7 +79,14 @@ export default function SmsConfigModal({
       setIsLoading(true);
       const response = await smsApi.getConfig(currentRestaurant.id);
       console.log("response", response);
-      setConfig(response);
+      setConfig({
+        enabled: response.enabled || false,
+        username: response.username || '',
+        password: response.password || '',
+        senderId: response.senderId || '',
+        confirmationEnabled: response.confirmationEnabled ?? true,
+        cancellationEnabled: response.cancellationEnabled ?? true,
+      });
       if (response.enabled && response.username && response.password) {
         setConnectionStatus('success');
       }
@@ -92,6 +103,8 @@ export default function SmsConfigModal({
             username: '',
             password: '',
             senderId: '',
+            confirmationEnabled: true,
+            cancellationEnabled: true,
           });
           
           toast.error('Unable to load SMS configuration. Please check your permissions.');
@@ -104,6 +117,8 @@ export default function SmsConfigModal({
         username: '',
         password: '',
         senderId: '',
+        confirmationEnabled: true,
+        cancellationEnabled: true,
       });
     } finally {
       setIsLoading(false);
@@ -144,6 +159,8 @@ export default function SmsConfigModal({
         username: config.username,
         password: config.password,
         senderId: config.senderId,
+        confirmationEnabled: config.confirmationEnabled,
+        cancellationEnabled: config.cancellationEnabled,
       };
       
       console.log('Data being sent to API:', {
@@ -151,6 +168,8 @@ export default function SmsConfigModal({
         username: configToSend.username ? '[REDACTED]' : 'EMPTY',
         password: configToSend.password ? '[REDACTED]' : 'EMPTY',
         senderId: configToSend.senderId,
+        confirmationEnabled: configToSend.confirmationEnabled,
+        cancellationEnabled: configToSend.cancellationEnabled,
       });
       
       const response = await smsApi.updateConfig(currentRestaurant.id, configToSend);
@@ -163,6 +182,8 @@ export default function SmsConfigModal({
           username: response.username || '',
           password: response.password || '',
           senderId: response.senderId || '',
+          confirmationEnabled: response.confirmationEnabled ?? true,
+          cancellationEnabled: response.cancellationEnabled ?? true,
         });
         
         // Update connection status if credentials are saved
@@ -399,8 +420,8 @@ export default function SmsConfigModal({
                               <Icon icon="solar:key-bold" className="h-6 w-6 text-primary-600" />
                             </div>
                             <div>
-                              <h3 className="text-xl font-semibold">Best2SMS Credentials</h3>
-                              <p className="text-default-600">Enter your Best2SMS account details</p>
+                              <h3 className="text-xl font-semibold">SMS Service Credentials</h3>
+                              <p className="text-default-600">Enter your SMS service account details</p>
                             </div>
                           </div>
                         </CardHeader>
@@ -408,7 +429,7 @@ export default function SmsConfigModal({
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <Input
                               label="Username"
-                              placeholder="Enter your Best2SMS username"
+                              placeholder="Enter your SMS service username"
                               value={config.username}
                               onValueChange={(value) =>
                                 setConfig(prev => ({ ...prev, username: value }))
@@ -427,7 +448,7 @@ export default function SmsConfigModal({
                             
                             <Input
                               label="Password"
-                              placeholder="Enter your Best2SMS password"
+                              placeholder="Enter your SMS service password"
                               type="password"
                               value={config.password}
                               onValueChange={(value) =>
@@ -464,6 +485,89 @@ export default function SmsConfigModal({
                               label: "text-sm font-medium"
                             }}
                           />
+                        </CardBody>
+                      </Card>
+                    )}
+
+                    {/* Notification Settings */}
+                    {config.enabled && (
+                      <Card className="border-none shadow-lg bg-gradient-to-br from-white to-default-50 relative overflow-hidden">
+                        {/* Coming Soon Overlay */}
+                        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex items-center justify-center">
+                          <div className="text-center p-8">
+                            <div className="p-4 rounded-full bg-gradient-to-br from-primary-100 to-primary-200 w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+                              <Icon icon="solar:hourglass-bold-duotone" className="h-10 w-10 text-primary-600" />
+                            </div>
+                            <h3 className="text-2xl font-bold text-primary-700 mb-2">Coming Soon</h3>
+                            <p className="text-default-600 max-w-sm">
+                              Individual SMS notification controls are currently under development. 
+                              All SMS notifications are currently enabled by default.
+                            </p>
+                            <div className="mt-4 px-4 py-2 bg-primary-50 rounded-lg border border-primary-200">
+                              <p className="text-sm text-primary-700 font-medium">
+                                ✨ Feature launching soon!
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <CardHeader className="pb-4">
+                          <div className="flex items-center gap-4">
+                            <div className="p-3 rounded-xl bg-gradient-to-br from-secondary-100 to-secondary-200">
+                              <Icon icon="solar:notification-bold" className="h-6 w-6 text-secondary-600" />
+                            </div>
+                            <div>
+                              <h3 className="text-xl font-semibold">Notification Settings</h3>
+                              <p className="text-default-600">Choose which SMS notifications to send</p>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardBody className="space-y-6">
+                          <div className="space-y-4">
+                            {/* Confirmation SMS Toggle */}
+                            <div className="flex items-center justify-between p-4 rounded-lg bg-default-50 border border-default-200">
+                              <div className="flex items-center gap-4">
+                                <div className="p-2 rounded-lg bg-success-100">
+                                  <Icon icon="solar:check-circle-bold" className="h-5 w-5 text-success-600" />
+                                </div>
+                                <div>
+                                  <h4 className="font-semibold text-default-800">Confirmation SMS</h4>
+                                  <p className="text-sm text-default-600">Send SMS when reservations are confirmed</p>
+                                </div>
+                              </div>
+                              <Switch
+                                isSelected={config.confirmationEnabled}
+                                onValueChange={(confirmationEnabled) => 
+                                  setConfig(prev => ({ ...prev, confirmationEnabled }))
+                                }
+                                color="success"
+                                size="lg"
+                                isDisabled
+                              />
+                            </div>
+
+                            {/* Cancellation SMS Toggle */}
+                            <div className="flex items-center justify-between p-4 rounded-lg bg-default-50 border border-default-200">
+                              <div className="flex items-center gap-4">
+                                <div className="p-2 rounded-lg bg-danger-100">
+                                  <Icon icon="solar:close-circle-bold" className="h-5 w-5 text-danger-600" />
+                                </div>
+                                <div>
+                                  <h4 className="font-semibold text-default-800">Cancellation SMS</h4>
+                                  <p className="text-sm text-default-600">Send SMS when reservations are cancelled</p>
+                                </div>
+                              </div>
+                              <Switch
+                                isSelected={config.cancellationEnabled}
+                                onValueChange={(cancellationEnabled) => 
+                                  setConfig(prev => ({ ...prev, cancellationEnabled }))
+                                }
+                                color="danger"
+                                size="lg"
+                                isDisabled
+                              />
+                            </div>
+                          </div>
                         </CardBody>
                       </Card>
                     )}
@@ -551,10 +655,7 @@ export default function SmsConfigModal({
 
             {/* Footer */}
             <div className="border-t border-divider bg-gradient-to-r from-default-50 to-default-100 p-6">
-              <div className="flex justify-between items-center max-w-4xl mx-auto">
-                <div className="text-sm text-default-500">
-                  Powered by Best2SMS • Secure & Reliable
-                </div>
+              <div className="flex justify-end items-center max-w-4xl mx-auto">
                 <div className="flex gap-3">
                   <Button 
                     variant="flat" 

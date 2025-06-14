@@ -578,9 +578,9 @@ export default function RestaurantSettingsPage() {
                   <CardBody className="gap-4">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50">
                       <div className="space-y-1">
-                        <h4 className="text-base font-medium text-gray-800 dark:text-gray-100">Best2sms Integration</h4>
+                        <h4 className="text-base font-medium text-gray-800 dark:text-gray-100">SMS Integration</h4>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                          Configure your Best2sms credentials to send SMS notifications to guests for reservations.
+                          Configure your SMS service to send notifications to guests for reservations.
                         </p>
                         <div className="flex flex-wrap gap-2 mt-2">
                           <Chip size="sm" color="primary" variant="flat">
@@ -648,17 +648,27 @@ export default function RestaurantSettingsPage() {
                       
                       <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
                         <div className="flex items-center gap-2 mb-2">
-                          <Icon icon="solar:dollar-bold-duotone" className="text-orange-500 w-5 h-5" />
-                          <h5 className="font-medium text-gray-800 dark:text-gray-100">Pricing</h5>
+                          <Icon icon="solar:shield-check-bold-duotone" className="text-green-500 w-5 h-5" />
+                          <h5 className="font-medium text-gray-800 dark:text-gray-100">Security & Reliability</h5>
                         </div>
-                        <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
-                          <p>SMS costs are based on your Best2sms account credits.</p>
-                          <p>Typical costs:</p>
-                          <ul className="ml-4 space-y-1">
-                            <li>• Local SMS: 0.01-0.05 credits</li>
-                            <li>• International SMS: 0.05-0.20 credits</li>
-                          </ul>
-                        </div>
+                        <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                          <li className="flex items-center gap-2">
+                            <Icon icon="solar:check-bold" className="text-green-500 w-4 h-4" />
+                            <span>Secure message delivery</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <Icon icon="solar:check-bold" className="text-green-500 w-4 h-4" />
+                            <span>99.9% uptime guarantee</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <Icon icon="solar:check-bold" className="text-green-500 w-4 h-4" />
+                            <span>GDPR compliant</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <Icon icon="solar:check-bold" className="text-green-500 w-4 h-4" />
+                            <span>24/7 monitoring</span>
+                          </li>
+                        </ul>
                       </div>
                     </div>
                   </CardBody>
