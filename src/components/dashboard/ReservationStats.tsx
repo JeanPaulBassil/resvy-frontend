@@ -602,10 +602,35 @@ export default function ReservationStats() {
                     {upcomingReservations.slice(0, 5).map(reservation => {
                       if (!reservation?.id) return null;
                       
-                      // Safely format time
+                      // Safely format time - handle timezone properly
                       let formattedTime = "N/A";
                       try {
-                        formattedTime = format(new Date(reservation.startTime), 'h:mm a');
+                        const time = reservation.startTime;
+                        let dateTime: Date;
+                        
+                        if (time.endsWith('Z') || time.includes('+') || time.includes('-')) {
+                          // Has timezone info, parse as-is
+                          dateTime = new Date(time);
+                        } else {
+                          // No timezone info - parse as local time by extracting components manually
+                          const match = time.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/);
+                          if (match) {
+                            const [, year, month, day, hours, minutes, seconds] = match;
+                            dateTime = new Date(
+                              parseInt(year),
+                              parseInt(month) - 1, // Month is 0-indexed
+                              parseInt(day),
+                              parseInt(hours),
+                              parseInt(minutes),
+                              parseInt(seconds)
+                            );
+                          } else {
+                            // Fallback to regular parsing
+                            dateTime = new Date(time);
+                          }
+                        }
+                        
+                        formattedTime = format(dateTime, 'h:mm a');
                       } catch (error) {
                         console.error("Error formatting time:", error);
                       }

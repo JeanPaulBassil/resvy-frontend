@@ -168,19 +168,20 @@ export default function EditReservationModal({
     // Format date as YYYY-MM-DD
     const dateString = date.toString();
 
-    // Create startTime by combining date and time
+    // Create startTime by combining date and time (keep in local timezone)
     const [hours, minutes] = startTime.split(':').map(Number);
-    const startTimeDate = new Date(dateString);
-    startTimeDate.setHours(hours, minutes, 0, 0);
-
-    // Create endTime (2 hours after startTime)
-    const endTimeDate = new Date(startTimeDate);
-    endTimeDate.setHours(endTimeDate.getHours() + 2);
+    
+    // Format as YYYY-MM-DDTHH:MM:SS (local time, no Z suffix)
+    const startTimeISO = `${dateString}T${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
+    
+    // Calculate end time (2 hours later)
+    const endHours = hours + 2;
+    const endTimeISO = `${dateString}T${endHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
 
     const updateData: UpdateReservationDto = {
       date: dateString,
-      startTime: startTimeDate.toISOString(),
-      endTime: endTimeDate.toISOString(),
+      startTime: startTimeISO,
+      endTime: endTimeISO,
       numberOfGuests: parseInt(numberOfGuests),
       tableId: tableId === '' ? null : tableId,
       shiftId: automaticShiftId || null, // Use automatically calculated shift

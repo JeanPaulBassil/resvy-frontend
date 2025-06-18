@@ -289,12 +289,12 @@ export function ReservationForm({
     const month = reservationDate.month;
     const day = reservationDate.day;
     
-    // Format as YYYY-MM-DDTHH:MM:SS.000Z but keep the local time
-    const startTimeISO = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}T${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00.000Z`;
+    // Format as YYYY-MM-DDTHH:MM:SS (local time, no Z suffix)
+    const startTimeISO = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}T${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
     
     // Calculate end time (2 hours later)
     const endHours = hours + 2;
-    const endTimeISO = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}T${endHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00.000Z`;
+    const endTimeISO = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}T${endHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
 
     // Automatically determine the shift based on reservation time
     const matchingShift = getMatchingShift();

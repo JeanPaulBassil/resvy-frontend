@@ -78,8 +78,31 @@ const getStatusEmoji = (status: ReservationStatus): string => {
 // Format date and time for display
 const formatDateTime = (date: string, time: string) => {
   try {
-    // Create a date object
-    const dateTime = parseISO(time);
+    // Parse the time string - handle timezone properly
+    let dateTime: Date;
+    
+    if (time.endsWith('Z') || time.includes('+') || time.includes('-')) {
+      // Has timezone info, parse as-is
+      dateTime = parseISO(time);
+    } else {
+      // No timezone info - parse as local time by extracting components manually
+      // This prevents any automatic timezone conversion
+      const match = time.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/);
+      if (match) {
+        const [, year, month, day, hours, minutes, seconds] = match;
+        dateTime = new Date(
+          parseInt(year),
+          parseInt(month) - 1, // Month is 0-indexed
+          parseInt(day),
+          parseInt(hours),
+          parseInt(minutes),
+          parseInt(seconds)
+        );
+      } else {
+        // Fallback to regular parsing
+        dateTime = new Date(time);
+      }
+    }
 
     // Format the time
     const formattedTime = format(dateTime, 'h:mm a');
