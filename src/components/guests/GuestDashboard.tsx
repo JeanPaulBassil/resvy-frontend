@@ -22,7 +22,6 @@ import {
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   AlertTriangle,
-  Clock,
   Filter,
   Grid,
   Info,
@@ -422,10 +421,10 @@ export default function GuestDashboard() {
                                 {guest.name}
                               </h3>
                               <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                                <Clock className="inline-block h-3.5 w-3.5 mr-1 text-gray-400 dark:text-gray-500" />
-                                {guest.lastVisit
-                                  ? new Date(guest.lastVisit).toLocaleDateString()
-                                  : 'No visits yet'}
+                                <User className="inline-block h-3.5 w-3.5 mr-1 text-gray-400 dark:text-gray-500" />
+                                {guest.visitCount === 0 
+                                  ? 'New guest'
+                                  : `${guest.visitCount} ${guest.visitCount === 1 ? 'visit' : 'visits'}`}
                               </div>
                             </div>
                           </div>
@@ -569,12 +568,6 @@ export default function GuestDashboard() {
                       scope="col"
                       className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100"
                     >
-                      Last Visit
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100"
-                    >
                       Visits
                     </th>
                     <th
@@ -645,11 +638,24 @@ export default function GuestDashboard() {
                             </div>
                           </td>
                           <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                              <Clock className="inline-block h-3.5 w-3.5 mr-1 text-gray-400 dark:text-gray-500" />
-                              {guest.lastVisit
-                                ? new Date(guest.lastVisit).toLocaleDateString()
-                                : 'No visits yet'}
+                            <div className="flex flex-wrap gap-1.5">
+                              {guest.tags.length > 0 ? (
+                                guest.tags.map((tag) => (
+                                  <Chip
+                                    key={tag}
+                                    size="sm"
+                                    variant="flat"
+                                    color={getTagColor(tag)}
+                                    className="group-hover:scale-105 transition-transform duration-200"
+                                  >
+                                    {tag}
+                                  </Chip>
+                                ))
+                              ) : (
+                                <span className="text-gray-400 dark:text-gray-500 text-xs italic">
+                                  No tags
+                                </span>
+                              )}
                             </div>
                           </td>
                           <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">

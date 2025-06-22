@@ -8,6 +8,7 @@ import {
 } from '@/api/reservation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import useAppMutation from './useAppMutation';
+import { guestKeys } from './useGuest';
 
 // Query keys for React Query
 export const reservationKeys = {
@@ -123,6 +124,18 @@ export const useUpdateReservation = (id: string) => {
       queryClient.invalidateQueries({
         queryKey: reservationKeys.lists(),
       });
+
+      // If the reservation was completed, invalidate guest cache since visit count may have been updated
+      if (updatedReservation.status === 'COMPLETED') {
+        queryClient.invalidateQueries({
+          queryKey: guestKeys.list(updatedReservation.restaurantId),
+        });
+        if (updatedReservation.guestId) {
+          queryClient.invalidateQueries({
+            queryKey: guestKeys.detail(updatedReservation.guestId, updatedReservation.restaurantId),
+          });
+        }
+      }
     },
     additionalInvalidateQueries: [reservationKeys.detail(id)],
   });

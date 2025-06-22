@@ -574,7 +574,7 @@ export default function ReservationStats() {
                 }}
                 variant="flat"
               >
-                <DropdownItem key="view-details" as={Link} href="/tables">View Tables</DropdownItem>
+                <DropdownItem key="view-details" as={Link} href="/floor-plan">View Tables</DropdownItem>
               </DropdownMenu>
             </Dropdown>
           </Card>

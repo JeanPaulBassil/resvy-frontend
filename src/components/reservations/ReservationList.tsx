@@ -282,7 +282,11 @@ export default function ReservationList({
                 
                 {/* Reservation details */}
                 <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-6">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 flex-1">
+                  <div className={`grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1 ${
+                    reservation.note 
+                      ? 'lg:grid-cols-4' 
+                      : 'lg:grid-cols-3'
+                  }`}>
                     {/* Date & Time */}
                     <div className="flex items-start gap-3 bg-gray-50 dark:bg-gray-800/60 px-3 py-2 rounded-lg min-h-[70px]">
                       <div className="p-2 bg-blue-50 dark:bg-blue-500/10 rounded-full text-blue-600 dark:text-blue-400 mt-1 flex-shrink-0">
@@ -326,67 +330,76 @@ export default function ReservationList({
                         </div>
                       </div>
                     </div>
-                  </div>
-                  
-                  {/* Notes and Actions */}
-                  <div className="flex items-center justify-between md:flex-col md:items-end gap-3">
+
                     {/* Notes (if present) */}
                     {reservation.note && (
-                      <Tooltip content={reservation.note}>
-                        <div className="flex items-center gap-1 text-gray-500 cursor-help">
+                      <div className="flex items-start gap-3 bg-gray-50 dark:bg-gray-800/60 px-3 py-2 rounded-lg min-h-[70px] sm:col-span-2 lg:col-span-1">
+                        <div className="p-2 bg-purple-50 dark:bg-purple-500/10 rounded-full text-purple-600 dark:text-purple-400 mt-1 flex-shrink-0">
                           <AlertCircle className="h-4 w-4" />
-                          <span className="text-xs">Has notes</span>
                         </div>
-                      </Tooltip>
+                        <div className="flex flex-col justify-center min-w-0">
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Notes</div>
+                          <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <Tooltip content={reservation.note}>
+                              <span className="line-clamp-2 cursor-help">
+                                {reservation.note.length > 50 
+                                  ? `${reservation.note.substring(0, 50)}...` 
+                                  : reservation.note
+                                }
+                              </span>
+                            </Tooltip>
+                          </div>
+                        </div>
+                      </div>
                     )}
+                  </div>
+                  
+                  {/* Actions */}
+                  <div className="flex items-center justify-end gap-2 flex-shrink-0">
+                    <Tooltip content="Edit reservation">
+                      <Button
+                        isIconOnly
+                        variant="flat"
+                        radius="full"
+                        size="sm"
+                        onPress={() => handleOpenEditModal(reservation)}
+                        className="text-gray-500 hover:text-primary-500"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                    </Tooltip>
                     
-                    {/* Actions */}
-                    <div className="flex items-center gap-2">
-                      <Tooltip content="Edit reservation">
-                        <Button
-                          isIconOnly
-                          variant="flat"
-                          radius="full"
-                          size="sm"
-                          onPress={() => handleOpenEditModal(reservation)}
-                          className="text-gray-500 hover:text-primary-500"
-                        >
-                          <Edit2 className="h-4 w-4" />
+                    <Tooltip content="Change status">
+                      <Button
+                        isIconOnly
+                        variant="flat"
+                        radius="full"
+                        size="sm"
+                        onPress={() => handleOpenStatusChangeModal(reservation)}
+                        className="text-gray-500 hover:text-primary-500"
+                      >
+                        <Settings className="h-4 w-4" />
+                      </Button>
+                    </Tooltip>
+                    
+                    <Dropdown>
+                      <DropdownTrigger>
+                        <Button isIconOnly size="sm" variant="flat" radius="full" className="text-gray-500">
+                          <MoreVertical className="h-4 w-4" />
                         </Button>
-                      </Tooltip>
-                      
-                      <Tooltip content="Change status">
-                        <Button
-                          isIconOnly
-                          variant="flat"
-                          radius="full"
-                          size="sm"
-                          onPress={() => handleOpenStatusChangeModal(reservation)}
-                          className="text-gray-500 hover:text-primary-500"
+                      </DropdownTrigger>
+                      <DropdownMenu aria-label="Reservation Actions">
+                        <DropdownItem 
+                          key="delete"
+                          className="text-danger"
+                          color="danger"
+                          startContent={<Trash2 className="h-4 w-4" />}
+                          onPress={() => handleDelete(reservation.id)}
                         >
-                          <Settings className="h-4 w-4" />
-                        </Button>
-                      </Tooltip>
-                      
-                      <Dropdown>
-                        <DropdownTrigger>
-                          <Button isIconOnly size="sm" variant="flat" radius="full" className="text-gray-500">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownTrigger>
-                        <DropdownMenu aria-label="Reservation Actions">
-                          <DropdownItem 
-                            key="delete"
-                            className="text-danger"
-                            color="danger"
-                            startContent={<Trash2 className="h-4 w-4" />}
-                            onPress={() => handleDelete(reservation.id)}
-                          >
-                            Delete
-                          </DropdownItem>
-                        </DropdownMenu>
-                      </Dropdown>
-                    </div>
+                          Delete
+                        </DropdownItem>
+                      </DropdownMenu>
+                    </Dropdown>
                   </div>
                 </div>
               </div>

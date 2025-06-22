@@ -32,7 +32,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
 import {
   AlertTriangle,
-  Calendar,
   CalendarDays,
   Check,
   ChevronLeft,
@@ -453,10 +452,10 @@ export default function GuestDetailView({ guest: initialGuest, onBack }: GuestDe
                       </span>
                     </a>
                     <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mb-4">
-                      <Calendar className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-                      {guest.lastVisit
-                        ? new Date(guest.lastVisit).toLocaleDateString()
-                        : 'No visits yet'}
+                      <User className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                      {guest.visitCount === 0 
+                        ? 'New guest'
+                        : `${guest.visitCount} ${guest.visitCount === 1 ? 'visit' : 'visits'}`}
                     </div>
                   </div>
                 </div>

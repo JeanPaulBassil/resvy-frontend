@@ -209,18 +209,34 @@ export default function UnauthorizedPage() {
                   should have access, please contact our support team.
                 </p>
                 <div className="border-t border-gray-200 pt-4 mt-4">
-                  <h3 className="font-semibold text-lg mb-3">Contact Support</h3>
+                  <h3 className="font-semibold text-lg mb-3">Support Contact</h3>
+                  <div className="flex flex-col space-y-3 mb-6">
+                    <div className="flex items-center justify-center gap-2">
+                      <Icon icon={ICONS.email} className="h-5 w-5 text-primary" />
+                      <a href="mailto:support@rooster-me.com" className="text-primary hover:underline">
+                        support@rooster-me.com
+                      </a>
+                    </div>
+                    <div className="flex items-center justify-center gap-2">
+                      <Icon icon={ICONS.email} className="h-5 w-5 text-primary" />
+                      <a href="mailto:jp@rooster-me.com" className="text-primary hover:underline">
+                        jp@rooster-me.com
+                      </a>
+                    </div>
+                  </div>
+                  
+                  <h3 className="font-semibold text-lg mb-3">Sales Contact</h3>
                   <div className="flex flex-col space-y-3">
                     <div className="flex items-center justify-center gap-2">
                       <Icon icon={ICONS.email} className="h-5 w-5 text-primary" />
-                      <a href="mailto:jean.paul.bassil@outlook.com" className="text-primary hover:underline">
-                        jean.paul.bassil@outlook.com
+                      <a href="mailto:info@rooster-me.com" className="text-primary hover:underline">
+                        info@rooster-me.com
                       </a>
                     </div>
                     <div className="flex items-center justify-center gap-2">
                       <Icon icon={ICONS.phone} className="h-5 w-5 text-primary" />
-                      <a href="tel:+19617076685" className="text-primary hover:underline">
-                        (961) 70766858
+                      <a href="tel:+9613543740" className="text-primary hover:underline">
+                        +961 3 543740
                       </a>
                     </div>
                   </div>

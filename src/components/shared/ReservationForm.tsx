@@ -89,11 +89,11 @@ function TimeSlotButton({
   );
 }
 
-// Generate time slots from 00:00 to 23:30 in 30-minute increments
+// Generate time slots from 00:00 to 23:45 in 15-minute increments
 const generateTimeSlots = (format: TimeFormatEnum = TimeFormatEnum.TwelveHour) => {
   const slots: TimeSlot[] = [];
   for (let hour = 10; hour < 23; hour++) {
-    for (let minute = 0; minute < 60; minute += 30) {
+    for (let minute = 0; minute < 60; minute += 15) {
       // 24-hour format for value
       const value = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
 
@@ -156,11 +156,17 @@ export function ReservationForm({
       return '11:00';
     }
 
-    // Round up to the next half hour
+    // Round up to the next 15 minute interval
     let nextHour = hour;
-    let nextMinute = minutes >= 30 ? 0 : 30;
-
-    if (minutes >= 30) {
+    let nextMinute;
+    
+    if (minutes < 15) {
+      nextMinute = 15;
+    } else if (minutes < 30) {
+      nextMinute = 30;
+    } else if (minutes < 45) {
+      nextMinute = 45;
+    } else {
       nextHour++;
       nextMinute = 0;
     }
@@ -292,9 +298,32 @@ export function ReservationForm({
     // Format as YYYY-MM-DDTHH:MM:SS (local time, no Z suffix)
     const startTimeISO = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}T${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
     
-    // Calculate end time (2 hours later)
-    const endHours = hours + 2;
-    const endTimeISO = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}T${endHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
+    // Calculate end time (2 hours later) - handle day rollover properly
+    let endHours = hours + 2;
+    let endDay = day;
+    let endMonth = month;
+    let endYear = year;
+    
+    // Handle hour rollover to next day
+    if (endHours >= 24) {
+      endHours = endHours - 24;
+      endDay = day + 1;
+      
+      // Handle month rollover
+      const daysInMonth = new Date(year, month, 0).getDate();
+      if (endDay > daysInMonth) {
+        endDay = 1;
+        endMonth = month + 1;
+        
+        // Handle year rollover
+        if (endMonth > 12) {
+          endMonth = 1;
+          endYear = year + 1;
+        }
+      }
+    }
+    
+    const endTimeISO = `${endYear}-${endMonth.toString().padStart(2, '0')}-${endDay.toString().padStart(2, '0')}T${endHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
 
     // Automatically determine the shift based on reservation time
     const matchingShift = getMatchingShift();

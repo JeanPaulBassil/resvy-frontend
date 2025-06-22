@@ -72,12 +72,12 @@ export default function EditReservationModal({
   const [note, setNote] = useState<string>(reservation.note || '');
   const [validationError, setValidationError] = useState<string | null>(null);
 
-  // Generate time slots for dropdown (30-minute intervals from 6:00 AM to 11:30 PM)
+  // Generate time slots for dropdown (15-minute intervals from 6:00 AM to 11:45 PM)
   const timeSlots = useMemo(() => {
     const slots = [];
     for (let hour = 6; hour < 24; hour++) {
-      for (let minute = 0; minute < 60; minute += 30) {
-        if (hour === 23 && minute > 30) continue; // Stop at 11:30 PM
+      for (let minute = 0; minute < 60; minute += 15) {
+        if (hour === 23 && minute > 45) continue; // Stop at 11:45 PM
 
         const timeValue = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
         const isPM = hour >= 12;
@@ -174,9 +174,20 @@ export default function EditReservationModal({
     // Format as YYYY-MM-DDTHH:MM:SS (local time, no Z suffix)
     const startTimeISO = `${dateString}T${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
     
-    // Calculate end time (2 hours later)
-    const endHours = hours + 2;
-    const endTimeISO = `${dateString}T${endHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
+    // Calculate end time (2 hours later) - handle day rollover properly
+    let endHours = hours + 2;
+    let endDateString = dateString;
+    
+    // Handle hour rollover to next day
+    if (endHours >= 24) {
+      endHours = endHours - 24;
+      // Calculate next day
+      const currentDate = new Date(dateString);
+      currentDate.setDate(currentDate.getDate() + 1);
+      endDateString = currentDate.toISOString().split('T')[0]; // Get YYYY-MM-DD format
+    }
+    
+    const endTimeISO = `${endDateString}T${endHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
 
     const updateData: UpdateReservationDto = {
       date: dateString,
