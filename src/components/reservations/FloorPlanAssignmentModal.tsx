@@ -299,8 +299,8 @@ export default function FloorPlanAssignmentModal({
       }
     }
 
-    // Prevent default to avoid conflicts with scroll behavior on iPad
-    e.preventDefault();
+    // Don't prevent default here as it breaks drag functionality
+    // e.preventDefault() is not needed for drag start
   };
 
   // Handle drag over
@@ -890,9 +890,11 @@ export default function FloorPlanAssignmentModal({
             )}
           </AnimatePresence>
 
-          {/* Table overlay for drop zones */}
+          {/* Table overlay for drop zones - Filter out hidden tables */}
           <div className="absolute inset-0 z-10 pointer-events-none">
-            {floorTables.map((table) => (
+            {floorTables
+              .filter((table) => !table.isHidden) // Exclude hidden tables (original tables that are part of a merge)
+              .map((table) => (
               <div
                 key={table.id}
                 data-table-id={table.id}
@@ -949,7 +951,7 @@ export default function FloorPlanAssignmentModal({
                   }
                 }}
               />
-            ))}
+              ))}
           </div>
 
           {/* Floor plan */}

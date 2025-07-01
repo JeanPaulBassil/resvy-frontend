@@ -24,14 +24,16 @@ import {
   CalendarClock,
   CalendarDays,
   Check,
+  CheckCircle,
   ClipboardEdit,
   Clock,
   Coffee,
+  Loader2,
   ScrollText,
   Users,
   Utensils,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRestaurant } from '../providers/RestaurantProvider';
 
 interface EditReservationModalProps {
@@ -71,6 +73,12 @@ export default function EditReservationModal({
   const [tableId, setTableId] = useState<string>(reservation.tableId || '');
   const [note, setNote] = useState<string>(reservation.note || '');
   const [validationError, setValidationError] = useState<string | null>(null);
+
+  // Auto-save state for notes
+  const [isSavingNote, setIsSavingNote] = useState(false);
+  const [noteLastSaved, setNoteLastSaved] = useState(false);
+  const originalNote = useRef(reservation.note || '');
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Generate time slots for dropdown (15-minute intervals from 6:00 AM to 11:45 PM)
   const timeSlots = useMemo(() => {
@@ -214,8 +222,68 @@ export default function EditReservationModal({
     setTableId(selected);
   };
 
-  // Setup mutation
+  // Setup mutations
   const updateReservationMutation = useUpdateReservation(reservation.id);
+  const updateNoteMutation = useUpdateReservation(reservation.id);
+
+  // Auto-save note function
+  const autoSaveNote = useCallback(async (noteValue: string) => {
+    if (noteValue === originalNote.current) {
+      return; // No change, don't save
+    }
+
+    setIsSavingNote(true);
+    setNoteLastSaved(false);
+
+    try {
+      const updateData: UpdateReservationDto = {
+        note: noteValue || undefined,
+      };
+      await updateNoteMutation.mutateAsync(updateData);
+      originalNote.current = noteValue;
+      setNoteLastSaved(true);
+      
+      // Hide "saved" indicator after 2 seconds
+      setTimeout(() => {
+        setNoteLastSaved(false);
+      }, 2000);
+    } catch (error) {
+      console.error('Error auto-saving note:', error);
+    } finally {
+      setIsSavingNote(false);
+    }
+  }, [updateNoteMutation]);
+
+  // Debounced auto-save effect
+  useEffect(() => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    // Only auto-save if note has changed from original
+    if (note !== originalNote.current) {
+      saveTimeoutRef.current = setTimeout(() => {
+        autoSaveNote(note);
+      }, 500); // Auto-save after 0.5 seconds of no typing (reduced from 1.5s)
+    }
+
+    // Cleanup timeout on unmount - but save pending changes first
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+        // Save any pending changes immediately on unmount
+        if (note !== originalNote.current) {
+          autoSaveNote(note);
+        }
+      }
+    };
+  }, [note, autoSaveNote]);
+
+  // Enhanced note change handler
+  const handleNoteChange = useCallback((value: string) => {
+    setNote(value);
+    setNoteLastSaved(false); // Reset saved indicator when user types
+  }, []);
 
   // Find shift name for display
   const selectedShiftName = useMemo(() => {
@@ -349,10 +417,12 @@ export default function EditReservationModal({
                 aria-label="Select a table"
                 items={[
                   { key: '', label: 'No table assigned' },
-                  ...tables.map((table) => ({
-                    key: table.id,
-                    label: `${table.name} (${table.capacity} people)`,
-                  })),
+                  ...tables
+                    .filter((table) => !table.isHidden) // Exclude hidden tables (original tables that are part of a merge)
+                    .map((table) => ({
+                      key: table.id,
+                      label: `${table.name} (${table.capacity} people)${table.isMerged ? ' (Merged)' : ''}`,
+                    })),
                 ]}
                 size="sm"
                 classNames={{
@@ -380,23 +450,40 @@ export default function EditReservationModal({
           </div>
 
           <div>
-            <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
-              <ScrollText className="h-4 w-4 text-primary" />
-              <span>Notes</span>
-            </h3>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-medium flex items-center gap-2">
+                <ScrollText className="h-4 w-4 text-primary" />
+                <span>Notes</span>
+              </h3>
+              {/* Auto-save status indicator */}
+              <div className="flex items-center gap-1 text-xs">
+                {isSavingNote && (
+                  <div className="flex items-center gap-1 text-blue-600">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <span>Saving...</span>
+                  </div>
+                )}
+                {noteLastSaved && !isSavingNote && (
+                  <div className="flex items-center gap-1 text-green-600">
+                    <CheckCircle className="h-3 w-3" />
+                    <span>Saved</span>
+                  </div>
+                )}
+              </div>
+            </div>
             <Card className="p-3">
               <Textarea
                 label="Special Requests & Notes"
                 placeholder="Add any special requests, dietary restrictions, or notes"
                 value={note}
-                onValueChange={setNote}
+                onValueChange={handleNoteChange}
                 rows={3}
                 size="sm"
                 classNames={{
                   label: 'font-medium text-xs',
                   input: 'bg-white dark:bg-gray-800 min-h-[80px]',
                 }}
-                description="Optional: Include any information that might help provide better service"
+                description="Notes are automatically saved as you type"
               />
             </Card>
           </div>

@@ -32,9 +32,10 @@ export default function TableAssignmentModal({
   // Get tables data
   const { data: tables = [], isLoading: isLoadingTables } = useTables(restaurantId);
 
-  // Filter tables based on capacity
+  // Filter tables based on capacity and exclude hidden tables
   const availableTables = tables.filter(
     (table) =>
+      !table.isHidden && // Exclude hidden tables (original tables that are part of a merge)
       (table.status === TableStatus.AVAILABLE || table.id === reservation.tableId) &&
       table.capacity >= reservation.numberOfGuests
   );

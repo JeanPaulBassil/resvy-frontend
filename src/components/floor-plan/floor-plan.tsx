@@ -567,28 +567,31 @@ export default function FloorPlan({
         )}
       </AnimatePresence>
 
-      {/* Tables */}
-      {tables.map((table) => (
-        <TableComponent
-          key={table.id}
-          table={table}
-          tables={tables}
-          isSelected={selectedTableIds.includes(table.id)}
-          onSelect={() => onSelectTable(table.id)}
-          onUpdatePosition={(x, y) => onUpdateTablePosition(table.id, x, y)}
-          containerRef={floorPlanRef}
-          onDoubleClick={onEditTable}
-          isMerged={table.isMerged}
-          onDragEnd={handleTableDragEnd}
-          onDragStart={() => handleTableDragStart(table.id)}
-          onDragMove={() => handleTableDragMove(table.id)}
-          isAdjacentForMerge={mergeCandidates.includes(table.id) && mergeCandidates.length >= 2}
-          mergeAnimation={mergeAnimations.find(
-            anim => anim.sourceTableId === table.id || anim.targetTableId === table.id
-          )}
-          animatingMerge={animatingMerge}
-        />
-      ))}
+      {/* Tables - Filter out hidden tables (original tables that are part of a merge) */}
+      {tables
+        .filter((table) => !table.isHidden)
+        .map((table) => (
+          <TableComponent
+            key={table.id}
+            table={table}
+            tables={tables}
+            isSelected={selectedTableIds.includes(table.id)}
+            onSelect={() => onSelectTable(table.id)}
+            onUpdatePosition={(x, y) => onUpdateTablePosition(table.id, x, y)}
+            containerRef={floorPlanRef}
+            onDoubleClick={onEditTable}
+            isMerged={table.isMerged}
+            onDragEnd={handleTableDragEnd}
+            onDragStart={() => handleTableDragStart(table.id)}
+            onDragMove={() => handleTableDragMove(table.id)}
+            isAdjacentForMerge={mergeCandidates.includes(table.id) && mergeCandidates.length >= 2}
+            mergeAnimation={mergeAnimations.find(
+              anim => anim.sourceTableId === table.id || anim.targetTableId === table.id
+            )}
+            animatingMerge={animatingMerge}
+          />
+        ))}
+    
       
       {/* Animation traces/particles for merging tables */}
       <AnimatePresence>
@@ -1025,22 +1028,24 @@ export default function FloorPlan({
           {/* Mini map */}
           <div className="absolute bottom-3 right-3 w-32 h-24 bg-white/80 backdrop-blur-sm rounded-lg shadow-md border border-gray-200 overflow-hidden">
             <div className="w-full h-full p-1 opacity-70" style={{ backgroundColor: floorColor }}>
-              {tables.map((table) => (
-                <div
-                  key={`mini-${table.id}`}
-                  className={cn(
-                    "absolute rounded-sm border border-gray-400",
-                    selectedTableIds.includes(table.id) && "border-2 border-primary"
-                  )}
-                  style={{
-                    left: `${(table.x / 1000) * 100}%`,
-                    top: `${(table.y / 600) * 100}%`,
-                    width: `4%`,
-                    height: `4%`,
-                    backgroundColor: getTableColor(table.status),
-                  }}
-                />
-              ))}
+              {tables
+                .filter((table) => !table.isHidden)
+                .map((table) => (
+                  <div
+                    key={`mini-${table.id}`}
+                    className={cn(
+                      "absolute rounded-sm border border-gray-400",
+                      selectedTableIds.includes(table.id) && "border-2 border-primary"
+                    )}
+                    style={{
+                      left: `${(table.x / 1000) * 100}%`,
+                      top: `${(table.y / 600) * 100}%`,
+                      width: `4%`,
+                      height: `4%`,
+                      backgroundColor: getTableColor(table.status),
+                    }}
+                  />
+                ))}
             </div>
             <div className="absolute top-1 left-1 text-[8px] font-medium text-gray-600 bg-white/70 px-1 rounded">
               Overview

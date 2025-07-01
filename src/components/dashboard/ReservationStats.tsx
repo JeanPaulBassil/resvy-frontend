@@ -170,11 +170,13 @@ export default function ReservationStats() {
   const tableAvailability = useMemo(() => {
     if (!tables || tables.length === 0) return { available: 0, total: 0 };
     
-    const availableTables = tables.filter(table => table.status === TableStatus.AVAILABLE);
+    // Filter out hidden tables (original tables that are part of a merge)
+    const visibleTables = tables.filter(table => !table.isHidden);
+    const availableTables = visibleTables.filter(table => table.status === TableStatus.AVAILABLE);
     
     return {
       available: availableTables.length,
-      total: tables.length,
+      total: visibleTables.length,
     };
   }, [tables]);
   

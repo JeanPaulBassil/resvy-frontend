@@ -214,19 +214,21 @@ export function ReservationForm({
     }) || null;
   };
 
-  // Format tables into the required structure
+  // Format tables into the required structure and exclude hidden tables
   const availableTables = React.useMemo(() => {
     if (!tablesData) return [];
 
-    return tablesData.map((table) => ({
-      id: table.id,
-      name: table.name,
-      capacity: {
-        min: 1,
-        max: table.capacity,
-      },
-      status: table.status,
-    }));
+    return tablesData
+      .filter((table) => !table.isHidden) // Exclude hidden tables (original tables that are part of a merge)
+      .map((table) => ({
+        id: table.id,
+        name: table.name,
+        capacity: {
+          min: 1,
+          max: table.capacity,
+        },
+        status: table.status,
+      }));
   }, [tablesData]);
 
   // Filter tables based on party size
